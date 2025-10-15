@@ -29,10 +29,6 @@ builder.Services.AddSingleton<IStorage, MemoryStorage>();
 
 WebApplication app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseDeveloperExceptionPage();
-}
 
 app.UseStaticFiles();
 app.UseRouting();
@@ -45,8 +41,8 @@ var incomingRoute = app.MapPost("/api/messages", async (HttpRequest request, Htt
     await adapter.ProcessAsync(request, response, agent, cancellationToken);
 });
 
-// Left to allow you to add controllers if you wish later.
-if (app.Environment.IsDevelopment() || app.Environment.EnvironmentName == "TestTool")
+// Enabling anonymous access to the root and controller endpoints in development for testing purposes.
+if (app.Environment.IsDevelopment() )
 {
     app.MapGet("/", () => "Microsoft Agents SDK From Azure AI Foundry Agent Service Sample");
     app.UseDeveloperExceptionPage();

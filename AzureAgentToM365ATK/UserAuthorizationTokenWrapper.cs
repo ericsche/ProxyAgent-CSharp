@@ -37,19 +37,10 @@ namespace AzureAgentToM365ATK
         /// <exception cref="InvalidOperationException"></exception>
         public override async ValueTask<AccessToken> GetTokenAsync(TokenRequestContext requestContext, CancellationToken cancellationToken)
         {
-            // We need to handle converting .default scope to User_Impersonation scope.  
-            // this is a compensation for AI Foundry not yet publishing an application that contains the .default scope for the AI endpoint.
-            List<string> scp = new();
-            foreach (var scope in requestContext.Scopes)
-            {
-                if (scope.Contains(".default" , StringComparison.OrdinalIgnoreCase))
-                    scp.Add(scope.Replace(".default", "user_impersonation", StringComparison.OrdinalIgnoreCase));
-                else
-                    scp.Add(scope);
-            }
 
-            // Exchange the turn token for a JWT token for AI Foundry using the UserAuthorization service.
-            var jwtToken = await _userAuthorization.ExchangeTurnTokenAsync(_turnContext, exchangeScopes: scp, handlerName: _handlerName, cancellationToken: cancellationToken).ConfigureAwait(false);
+
+            // Get the JWT token for SSO using the UserAuthorization service. No Token exchange is needed as the azure bot service Oauth Connection is doing this for us.
+            var jwtToken = await _userAuthorization.GetTurnTokenAsync(_turnContext, handlerName: _handlerName, cancellationToken: cancellationToken).ConfigureAwait(false);
 
             // Convert the JWT token to a Azure AccessToken.
             var handler = new JwtSecurityTokenHandler();
