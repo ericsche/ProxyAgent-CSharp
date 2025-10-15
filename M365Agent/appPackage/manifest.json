@@ -1,0 +1,71 @@
+{
+  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/vdevPreview/MicrosoftTeams.schema.json",
+  "manifestVersion": "devPreview",
+  "version": "1.0.0",
+  "id": "${{TEAMS_APP_ID}}",
+  "developer": {
+    "name": "Teams App, Inc.",
+    "websiteUrl": "https://www.example.com",
+    "privacyUrl": "https://www.example.com/privacy",
+    "termsOfUseUrl": "https://www.example.com/termofuse"
+  },
+  "icons": {
+    "color": "color.png",
+    "outline": "outline.png"
+  },
+  "name": {
+    "short": "AzureAgentToM365ATK${{APP_NAME_SUFFIX}}",
+    "full": "full name for AzureAgentToM365ATK"
+  },
+  "description": {
+    "short": "Short description of AzureAgentToM365ATK",
+    "full": "Full description of AzureAgentToM365ATK"
+  },
+  "accentColor": "#FFFFFF",
+  "copilotAgents": {
+    "customEngineAgents": [
+      {
+        "type": "bot",
+        "id": "${{BOT_ID}}"
+      }
+    ]
+  },
+  "bots": [
+    {
+      "botId": "${{BOT_ID}}",
+      "scopes": [
+        "copilot",
+        "personal"
+      ],
+      "supportsFiles": false,
+      "isNotificationOnly": false,
+      "commandLists": [
+        {
+          "scopes": [
+            "copilot",
+            "personal"
+          ],
+          "commands": [
+            {
+              "title": "How can you help me?",
+              "description": "How can you help me?"
+            },
+            {
+              "title": "MSFT in last 2 weeks",
+              "description": "What was the MSFT stock value in the last 2 weeks?"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "composeExtensions": [
+  ],
+  "configurableTabs": [],
+  "staticTabs": [],
+  "permissions": [
+    "identity",
+    "messageTeamMembers"
+  ],
+  "validDomains": []
+}
