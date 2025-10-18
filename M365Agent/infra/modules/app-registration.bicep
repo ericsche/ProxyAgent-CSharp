@@ -5,23 +5,14 @@
 extension microsoftGraphV1
 
 @description('Application name for the Entra ID app registration')
-param aadAppName string = '1my-bot-app35'
+param aadAppName string
 
 @description('BotID this should match the Microsoft App ID in the Azure Bot Service Configuration')
-param botId string = guid('toto')
+param botId string
 
 @description('Tenant ID where the application will be registered')
-param tenantId string = '671740f0-0ce9-4b51-bae5-4096de8b66d3'
+param tenantId string
 
-
-@description('Federated credential subject from identity-rbac module')
-param fciSubject string =''
-
-@description('Pre-encoded Tenant ID in Base64URL format (optional)')
-param encodedTenantId string = ''
-
-@description('Pre-encoded Application ID in Base64URL format (optional)')
-param encodedAppId string = ''
 
 @description('Location for resources')
 param location string = resourceGroup().location
@@ -29,6 +20,7 @@ param location string = resourceGroup().location
 // Microsoft Entra ID Application Registration
 // Note: identifierUris cannot be set on initial creation with appId reference
 // Note: Retdirect URIs might vary based on your bot configuration
+// Note: List of redirect URL : https://learn.microsoft.com/en-us/microsoft-365/agents-sdk/azure-bot-user-authorization-federated-credentials#create-the-microsoft-entra-id-identity-provider
 resource aadApplication 'Microsoft.Graph/applications@v1.0' = {
   displayName: aadAppName
   uniqueName: aadAppName
@@ -154,19 +146,10 @@ resource aadApplication 'Microsoft.Graph/applications@v1.0' = {
       ]
     }
   ]
-  
-  optionalClaims: {
-    accessToken: [
-      {
-        name: 'upn'
-        essential: false
-      }
-    ]
-  }
 }
 
 // Call API to encode tenant ID (only if not pre-provided)
-module tenantIdEncoder 'guid-encoder.bicep' = if (encodedTenantId == '') {
+module tenantIdEncoder 'guid-encoder.bicep' = {
   name: 'encode-tenant-${uniqueString(tenantId)}'
   params: {
     guidToEncode: tenantId
@@ -174,30 +157,17 @@ module tenantIdEncoder 'guid-encoder.bicep' = if (encodedTenantId == '') {
   }
 }
 
-// Encode app ID using deployment script (only if not pre-provided)
-module appIdEncoder 'guid-encoder.bicep' = if (encodedAppId == '') {
-  name: 'encode-app-${uniqueString(aadAppName, resourceGroup().id)}'
-  params: {
-    guidToEncode: aadApplication.appId
-    location: location
-  }
-}
-
 // Use encoded values from API or parameters
-var calculatedEncodedTenantId = encodedTenantId != ''
-  ? encodedTenantId
-  : tenantIdEncoder!.outputs.encodedGuid
+var calculatedEncodedTenantId = tenantIdEncoder!.outputs.encodedGuid
 
-var calculatedEncodedAppId = encodedAppId != ''
-  ? encodedAppId
-  : appIdEncoder!.outputs.encodedGuid
-
-var myfciSubject ='/eid1/c/pub/t/${calculatedEncodedTenantId}/a/${calculatedEncodedAppId}/${guid(resourceGroup().id, aadAppName, 'federatedCredential')}'
+// Construct federated credential subject
+// appId encode value is the Bot Service one. it is hardcoded on purpose.
+var myfciSubject ='/eid1/c/pub/t/${calculatedEncodedTenantId}/a/9ExAW52n_ky4ZiS_jhpJIQ/${guid(resourceGroup().id, aadAppName, 'BotServiceOauthConnection')}'
 
 // Federated Identity Credential for Bot Framework token exchange
 // This must be a separate resource as it's a child resource type
 resource federatedCredential 'Microsoft.Graph/applications/federatedIdentityCredentials@v1.0' = {
-  name: '${aadApplication.uniqueName}/BotServiceOauthConnection'
+  name: '${aadApplication.uniqueName}/${guid(resourceGroup().id, aadAppName, 'BotServiceOauthConnection')}'
   audiences: [
     'api://AzureADTokenExchange'
   ]
