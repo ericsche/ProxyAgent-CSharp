@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.38.33.27573",
-      "templateHash": "11798572566882885698"
+      "templateHash": "14313159369453799477"
     }
   },
   "parameters": {
@@ -374,7 +374,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.38.33.27573",
-              "templateHash": "12366820592564891781"
+              "templateHash": "13094359407874666778"
             }
           },
           "parameters": {
@@ -479,12 +479,12 @@
               "apiVersion": "2023-12-01",
               "name": "[parameters('serverfarmsName')]",
               "location": "[parameters('location')]",
-              "kind": "app,linux",
+              "kind": "app",
               "sku": {
                 "name": "[parameters('webAppSKU')]"
               },
               "properties": {
-                "reserved": true
+                "reserved": false
               }
             },
             {
@@ -492,7 +492,7 @@
               "apiVersion": "2023-12-01",
               "name": "[parameters('webAppName')]",
               "location": "[parameters('location')]",
-              "kind": "app,linux",
+              "kind": "app",
               "properties": {
                 "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('serverfarmsName'))]",
                 "httpsOnly": true,
@@ -502,9 +502,9 @@
                   "http20Enabled": true,
                   "minTlsVersion": "1.2",
                   "ftpsState": "FtpsOnly",
-                  "linuxFxVersion": "DOTNETCORE|9.0",
+                  "netFrameworkVersion": "v9.0",
                   "healthCheckPath": "/health",
-                  "appSettings": "[concat(createArray(createObject('name', 'ASPNETCORE_ENVIRONMENT', 'value', 'Production'), createObject('name', 'WEBSITE_RUN_FROM_PACKAGE', 'value', '1'), createObject('name', 'AZURE_CLIENT_ID', 'value', reference(parameters('MSIid'), '2023-01-31').clientId), createObject('name', 'BOT_ID', 'value', parameters('botId')), createObject('name', 'BOT_TENANT_ID', 'value', parameters('botTenantId')), createObject('name', 'OAUTHCONNECTIONNAME', 'value', parameters('oauthConnectionName'))), if(and(parameters('enableAppInsights'), not(empty(parameters('appInsightsConnectionString')))), createArray(createObject('name', 'APPLICATIONINSIGHTS_CONNECTION_STRING', 'value', parameters('appInsightsConnectionString')), createObject('name', 'ApplicationInsightsAgent_EXTENSION_VERSION', 'value', '~3'), createObject('name', 'XDT_MicrosoftApplicationInsights_Mode', 'value', 'recommended')), createArray()), if(not(empty(parameters('azureAIFoundryEndpoint'))), createArray(createObject('name', 'AIServices__AzureAIFoundryProjectEndpoint', 'value', parameters('azureAIFoundryEndpoint'))), createArray()), if(not(empty(parameters('azureAIAgentId'))), createArray(createObject('name', 'AIServices__AgentID', 'value', parameters('azureAIAgentId'))), createArray()), parameters('additionalAppSettings'))]",
+                  "appSettings": "[concat(createArray(createObject('name', 'ASPNETCORE_ENVIRONMENT', 'value', 'Production'), createObject('name', 'WEBSITE_RUN_FROM_PACKAGE', 'value', '1'), createObject('name', 'AZURE_CLIENT_ID', 'value', reference(parameters('MSIid'), '2023-01-31').clientId), createObject('name', 'AgentApplication__StartTypingTimer', 'value', true()), createObject('name', 'AgentApplication__RemoveRecipientMention', 'value', false()), createObject('name', 'AgentApplication__NormalizeMentions', 'value', false()), createObject('name', 'AgentApplication__UserAuthorization__Handlers__SSO__Settings__AzureBotOAuthConnectionName', 'value', parameters('oauthConnectionName')), createObject('name', 'TokenValidation__Audiences__0', 'value', parameters('botId')), createObject('name', 'Connections__BotServiceConnection__Settings__AuthType', 'value', 'UserManagedIdentity'), createObject('name', 'Connections__BotServiceConnection__Settings__ClientId', 'value', parameters('botId')), createObject('name', 'Connections__BotServiceConnection__Settings__TenantId', 'value', parameters('botTenantId')), createObject('name', 'Connections__BotServiceConnection__Settings__Scopes__0', 'value', 'https://api.botframework.com/.default'), createObject('name', 'ConnectionsMap__ServiceUrl', 'value', '*'), createObject('name', 'ConnectionsMap__Connection', 'value', 'BotServiceConnection'), createObject('name', 'Logging__LogLevel__Default', 'value', 'Information'), createObject('name', 'Logging__LogLevel__Microsoft.AspNetCore', 'value', 'Warning'), createObject('name', 'Logging__LogLevel__Microsoft.Agents', 'value', 'Warning'), createObject('name', 'Logging__LogLevel__Microsoft.Hosting.Lifetime', 'value', 'Information')), if(and(parameters('enableAppInsights'), not(empty(parameters('appInsightsConnectionString')))), createArray(createObject('name', 'APPLICATIONINSIGHTS_CONNECTION_STRING', 'value', parameters('appInsightsConnectionString')), createObject('name', 'ApplicationInsightsAgent_EXTENSION_VERSION', 'value', '~3'), createObject('name', 'XDT_MicrosoftApplicationInsights_Mode', 'value', 'recommended')), createArray()), if(not(empty(parameters('azureAIFoundryEndpoint'))), createArray(createObject('name', 'AIServices__AzureAIFoundryProjectEndpoint', 'value', parameters('azureAIFoundryEndpoint'))), createArray()), if(not(empty(parameters('azureAIAgentId'))), createArray(createObject('name', 'AIServices__AgentID', 'value', parameters('azureAIAgentId'))), createArray()), parameters('additionalAppSettings'))]",
                   "cors": {
                     "allowedOrigins": [
                       "https://portal.azure.com",

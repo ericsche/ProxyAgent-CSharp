@@ -51,12 +51,12 @@ param azureAIAgentId string = ''
 resource serverfarm 'Microsoft.Web/serverfarms@2023-12-01' = {
   name: serverfarmsName
   location: location
-  kind: 'app,linux'
+  kind: 'app'
   sku: {
     name: webAppSKU
   }
   properties: {
-    reserved: true // Required for Linux
+    reserved: false // false = Windows, true = Linux
   }
 }
 
@@ -64,7 +64,7 @@ resource serverfarm 'Microsoft.Web/serverfarms@2023-12-01' = {
 resource webApp 'Microsoft.Web/sites@2023-12-01' = {
   name: webAppName
   location: location
-  kind: 'app,linux'
+  kind: 'app'
   properties: {
     serverFarmId: serverfarm.id
     httpsOnly: true
@@ -74,7 +74,7 @@ resource webApp 'Microsoft.Web/sites@2023-12-01' = {
       http20Enabled: true
       minTlsVersion: '1.2'
       ftpsState: 'FtpsOnly'
-      linuxFxVersion: 'DOTNETCORE|9.0'
+      netFrameworkVersion: 'v9.0'
       healthCheckPath: '/health'
       appSettings: concat([
         {

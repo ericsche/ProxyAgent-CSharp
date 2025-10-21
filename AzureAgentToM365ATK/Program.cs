@@ -22,6 +22,7 @@ builder.Services.AddKernel();
 // Agent SDK Registrations: 
 builder.Services.AddCloudAdapter();
 builder.Services.AddAgentAspNetAuthentication(builder.Configuration);
+
 builder.AddAgentApplicationOptions();
 builder.AddAgent<AzureAgent>();
 builder.Services.AddSingleton<IStorage, MemoryStorage>();

@@ -2,7 +2,7 @@
     "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/vdevPreview/MicrosoftTeams.schema.json",
     "manifestVersion": "devPreview",
     "version": "1.0.0",
-    "id": "38a1abae-308d-4c58-9389-ff4001c36691",
+    "id": "54c61f75-e738-4238-9aa0-fa68bbc14804",
     "developer": {
         "name": "Teams App, Inc.",
         "websiteUrl": "https://www.example.com",
@@ -26,7 +26,7 @@
     "staticTabs": [],
     "bots": [
         {
-            "botId": "c910777c-8079-4ff8-929c-91311cb233f1",
+            "botId": "29968040-b38b-488b-88e4-2c4f31bc0f06",
             "isNotificationOnly": false,
             "supportsFiles": false,
             "scopes": [
@@ -59,16 +59,16 @@
         "messageTeamMembers"
     ],
     "validDomains": [
-        "bot3daa81-app.azurewebsites.net"
+        "bot3b4749-app.azurewebsites.net"
     ],
     "webApplicationInfo": {
-        "id": "c743eb6f-d641-458a-b8fa-0e7465e6e985",
-        "resource": "api://botid-c910777c-8079-4ff8-929c-91311cb233f1"
+        "id": "a6cdf4c9-156e-4a2a-b2fc-6718502ad365",
+        "resource": "api://botid-29968040-b38b-488b-88e4-2c4f31bc0f06"
     },
     "copilotAgents": {
         "customEngineAgents": [
             {
-                "id": "c910777c-8079-4ff8-929c-91311cb233f1",
+                "id": "29968040-b38b-488b-88e4-2c4f31bc0f06",
                 "type": "bot"
             }
         ]
