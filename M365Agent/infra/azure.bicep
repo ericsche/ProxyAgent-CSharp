@@ -134,8 +134,7 @@ output location string = location
 
 // Identity outputs
 output identityName string = identityName
-output identityId string = botIdentity.outputs.identityId
-output identityClientId string = botIdentity.outputs.identityClientId
+output identityId string = botIdentity.outputs.identityClientId
 output identityPrincipalId string = botIdentity.outputs.identityPrincipalId
 
 // App Service outputs
