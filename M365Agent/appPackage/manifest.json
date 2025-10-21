@@ -15,11 +15,11 @@
   },
   "name": {
     "short": "AzureAgentToM365ATK${{APP_NAME_SUFFIX}}",
-    "full": "full name for AzureAgentToM365ATK"
+    "full": "Azure Agent for Microsoft 365 Copilot"
   },
   "description": {
-    "short": "Short description of AzureAgentToM365ATK",
-    "full": "Full description of AzureAgentToM365ATK"
+    "short": "Azure-powered agent for Microsoft 365 Copilot",
+    "full": "Custom engine agent that integrates Azure services with Microsoft 365 Copilot for enhanced productivity"
   },
   "accentColor": "#FFFFFF",
   "copilotAgents": {
@@ -59,6 +59,10 @@
       ]
     }
   ],
+  "webApplicationInfo": {
+    "id": "${{AAD_APP_CLIENT_ID}}",
+    "resource": "${{AAD_APP_ID_URI}}"
+  },
   "composeExtensions": [
   ],
   "configurableTabs": [],
@@ -67,5 +71,7 @@
     "identity",
     "messageTeamMembers"
   ],
-  "validDomains": []
+  "validDomains": [
+    "${{webAppHostName}}"
+  ]
 }

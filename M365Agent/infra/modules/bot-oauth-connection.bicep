@@ -59,7 +59,7 @@ resource botOAuthConnection 'Microsoft.BotService/botServices/connections@2022-0
 }
 
 // Outputs
-output connectionName string = botOAuthConnection.name
+output connectionName string = connectionName
 output connectionId string = botOAuthConnection.id
 output settingId string = botOAuthConnection.properties.settingId
 output provisioningState string = botOAuthConnection.properties.provisioningState

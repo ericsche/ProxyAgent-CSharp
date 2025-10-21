@@ -5,20 +5,17 @@
       "resourceBaseName": {
         "value": "bot${{RESOURCE_SUFFIX}}"
       },
-      "azureOpenAIApiKey": {
-        "value": "${{SECRET_AZURE_OPENAI_API_KEY}}"
-      },
-      "azureOpenAIEndpoint": {
-        "value": "${{AZURE_OPENAI_ENDPOINT}}"
-      },
-      "azureOpenAIDeploymentName": {
-        "value": "${{AZURE_OPENAI_DEPLOYMENT_NAME}}"
+      "botDisplayName": {
+        "value": "AzureAgentToM365ATK${{APP_NAME_SUFFIX}}"
       },
       "webAppSKU": {
         "value": "B1"
       },
-      "botDisplayName": {
-        "value": "AzureAgentToM365ATK"
+      "botServiceSku": {
+        "value": "F0"
+      },
+      "enableAppInsights": {
+        "value": false
       }
     }
   }

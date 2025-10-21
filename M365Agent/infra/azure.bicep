@@ -121,7 +121,7 @@ module botOAuthConnection 'modules/bot-oauth-connection.bicep' = {
     connectionName: 'SsoConnection'
     aadAppId: appRegistration.outputs.aadAppId
     aadAppIdUri: appRegistration.outputs.aadAppIdUri
-    federatedCredentialSubject: appRegistration.outputs.fciSubject
+    federatedCredentialSubject: appRegistration.outputs.fciName
     scopes: '${appRegistration.outputs.aadAppIdUri}/access_as_user'
     tenantId: tenantId
     location: 'global'
@@ -146,33 +146,14 @@ output webAppUrl string = 'https://${appService.outputs.webAppHostName}'
 output appServicePlanId string = appService.outputs.appServicePlanId
 
 // Bot Service outputs
+output BOT_ID string = botIdentity.outputs.identityClientId
 output botServiceName string = botServiceName
 output botEndpoint string = 'https://${appService.outputs.webAppHostName}/api/messages'
 
 // App Registration outputs
-output aadAppId string = appRegistration.outputs.aadAppId
-output aadAppObjectId string = appRegistration.outputs.aadAppObjectId
-output aadAppIdUri string = appRegistration.outputs.aadAppIdUri
-output servicePrincipalId string = appRegistration.outputs.servicePrincipalId
+output AAD_APP_CLIENT_ID string = appRegistration.outputs.aadAppId
+output AAD_APP_ID_URI string = appRegistration.outputs.aadAppIdUri
 output federatedCredentialName string = appRegistration.outputs.fciName
 // Note: fciSubject is used internally for OAuth connection but not exposed as output
 
-// OAuth Connection outputs
-output oauthConnectionName string = botOAuthConnection.outputs.connectionName
-output oauthConnectionId string = botOAuthConnection.outputs.connectionId
-output oauthSettingId string = botOAuthConnection.outputs.settingId
 
-// Deployment summary
-output deploymentSummary object = {
-  resourceBaseName: resourceBaseName
-  botDisplayName: botDisplayName
-  webAppUrl: 'https://${appService.outputs.webAppHostName}'
-  botEndpoint: 'https://${appService.outputs.webAppHostName}/api/messages'
-  aadAppId: appRegistration.outputs.aadAppId
-  identityClientId: botIdentity.outputs.identityClientId
-  teamsManifestUpdates: {
-    botId: botIdentity.outputs.identityClientId
-    webApplicationInfoId: appRegistration.outputs.aadAppId
-    webApplicationInfoResource: appRegistration.outputs.aadAppIdUri
-  }
-}

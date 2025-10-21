@@ -1,0 +1,76 @@
+{
+    "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/vdevPreview/MicrosoftTeams.schema.json",
+    "manifestVersion": "devPreview",
+    "version": "1.0.0",
+    "id": "38a1abae-308d-4c58-9389-ff4001c36691",
+    "developer": {
+        "name": "Teams App, Inc.",
+        "websiteUrl": "https://www.example.com",
+        "privacyUrl": "https://www.example.com/privacy",
+        "termsOfUseUrl": "https://www.example.com/termofuse"
+    },
+    "name": {
+        "short": "AzureAgentToM365ATKdev",
+        "full": "Azure Agent for Microsoft 365 Copilot"
+    },
+    "description": {
+        "short": "Azure-powered agent for Microsoft 365 Copilot",
+        "full": "Custom engine agent that integrates Azure services with Microsoft 365 Copilot for enhanced productivity"
+    },
+    "icons": {
+        "outline": "outline.png",
+        "color": "color.png"
+    },
+    "accentColor": "#FFFFFF",
+    "configurableTabs": [],
+    "staticTabs": [],
+    "bots": [
+        {
+            "botId": "c910777c-8079-4ff8-929c-91311cb233f1",
+            "isNotificationOnly": false,
+            "supportsFiles": false,
+            "scopes": [
+                "copilot",
+                "personal"
+            ],
+            "commandLists": [
+                {
+                    "scopes": [
+                        "copilot",
+                        "personal"
+                    ],
+                    "commands": [
+                        {
+                            "title": "How can you help me?",
+                            "description": "How can you help me?"
+                        },
+                        {
+                            "title": "MSFT in last 2 weeks",
+                            "description": "What was the MSFT stock value in the last 2 weeks?"
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "composeExtensions": [],
+    "permissions": [
+        "identity",
+        "messageTeamMembers"
+    ],
+    "validDomains": [
+        "bot3daa81-app.azurewebsites.net"
+    ],
+    "webApplicationInfo": {
+        "id": "c743eb6f-d641-458a-b8fa-0e7465e6e985",
+        "resource": "api://botid-c910777c-8079-4ff8-929c-91311cb233f1"
+    },
+    "copilotAgents": {
+        "customEngineAgents": [
+            {
+                "id": "c910777c-8079-4ff8-929c-91311cb233f1",
+                "type": "bot"
+            }
+        ]
+    }
+}
