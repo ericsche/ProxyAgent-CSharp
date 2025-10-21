@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.38.33.27573",
-      "templateHash": "4053513771837503266"
+      "templateHash": "11798572566882885698"
     }
   },
   "parameters": {
@@ -70,23 +70,9 @@
     },
     "enableAppInsights": {
       "type": "bool",
-      "defaultValue": false,
+      "defaultValue": true,
       "metadata": {
         "description": "Enable Application Insights"
-      }
-    },
-    "appInsightsInstrumentationKey": {
-      "type": "string",
-      "defaultValue": "",
-      "metadata": {
-        "description": "Application Insights instrumentation key (optional)"
-      }
-    },
-    "appInsightsConnectionString": {
-      "type": "string",
-      "defaultValue": "",
-      "metadata": {
-        "description": "Application Insights connection string (optional)"
       }
     },
     "additionalAppSettings": {
@@ -176,6 +162,159 @@
       }
     },
     {
+      "condition": "[parameters('enableAppInsights')]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2025-04-01",
+      "name": "deploy-app-insights",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "resourceBaseName": {
+            "value": "[parameters('resourceBaseName')]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "identityPrincipalId": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'deploy-bot-identity'), '2025-04-01').outputs.identityPrincipalId.value]"
+          },
+          "applicationType": {
+            "value": "web"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.38.33.27573",
+              "templateHash": "10700678519737501896"
+            }
+          },
+          "parameters": {
+            "resourceBaseName": {
+              "type": "string",
+              "metadata": {
+                "description": "Base name for resources"
+              }
+            },
+            "location": {
+              "type": "string",
+              "defaultValue": "[resourceGroup().location]",
+              "metadata": {
+                "description": "Location for all resources"
+              }
+            },
+            "identityPrincipalId": {
+              "type": "string",
+              "metadata": {
+                "description": "The managed identity principal ID that will access Application Insights"
+              }
+            },
+            "applicationType": {
+              "type": "string",
+              "defaultValue": "web",
+              "allowedValues": [
+                "web",
+                "other"
+              ],
+              "metadata": {
+                "description": "Application Insights application type"
+              }
+            }
+          },
+          "variables": {
+            "monitoringMetricsPublisherRoleId": "3913510d-42f4-4e42-8a64-420c390055eb"
+          },
+          "resources": [
+            {
+              "type": "Microsoft.OperationalInsights/workspaces",
+              "apiVersion": "2023-09-01",
+              "name": "[format('{0}-law', parameters('resourceBaseName'))]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "sku": {
+                  "name": "PerGB2018"
+                },
+                "retentionInDays": 30,
+                "features": {
+                  "enableLogAccessUsingOnlyResourcePermissions": true
+                },
+                "workspaceCapping": {
+                  "dailyQuotaGb": 1
+                }
+              }
+            },
+            {
+              "type": "Microsoft.Insights/components",
+              "apiVersion": "2020-02-02",
+              "name": "[format('{0}-ai', parameters('resourceBaseName'))]",
+              "location": "[parameters('location')]",
+              "kind": "[parameters('applicationType')]",
+              "properties": {
+                "Application_Type": "[parameters('applicationType')]",
+                "WorkspaceResourceId": "[resourceId('Microsoft.OperationalInsights/workspaces', format('{0}-law', parameters('resourceBaseName')))]",
+                "IngestionMode": "LogAnalytics",
+                "publicNetworkAccessForIngestion": "Enabled",
+                "publicNetworkAccessForQuery": "Enabled",
+                "DisableLocalAuth": false
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.OperationalInsights/workspaces', format('{0}-law', parameters('resourceBaseName')))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Authorization/roleAssignments",
+              "apiVersion": "2022-04-01",
+              "scope": "[format('Microsoft.Insights/components/{0}', format('{0}-ai', parameters('resourceBaseName')))]",
+              "name": "[guid(resourceId('Microsoft.Insights/components', format('{0}-ai', parameters('resourceBaseName'))), parameters('identityPrincipalId'), variables('monitoringMetricsPublisherRoleId'))]",
+              "properties": {
+                "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('monitoringMetricsPublisherRoleId'))]",
+                "principalId": "[parameters('identityPrincipalId')]",
+                "principalType": "ServicePrincipal"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Insights/components', format('{0}-ai', parameters('resourceBaseName')))]"
+              ]
+            }
+          ],
+          "outputs": {
+            "appInsightsId": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.Insights/components', format('{0}-ai', parameters('resourceBaseName')))]"
+            },
+            "appInsightsName": {
+              "type": "string",
+              "value": "[format('{0}-ai', parameters('resourceBaseName'))]"
+            },
+            "appInsightsConnectionString": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.Insights/components', format('{0}-ai', parameters('resourceBaseName'))), '2020-02-02').ConnectionString]"
+            },
+            "appInsightsInstrumentationKey": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.Insights/components', format('{0}-ai', parameters('resourceBaseName'))), '2020-02-02').InstrumentationKey]"
+            },
+            "logAnalyticsWorkspaceId": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.OperationalInsights/workspaces', format('{0}-law', parameters('resourceBaseName')))]"
+            },
+            "logAnalyticsWorkspaceName": {
+              "type": "string",
+              "value": "[format('{0}-law', parameters('resourceBaseName'))]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'deploy-bot-identity')]"
+      ]
+    },
+    {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2025-04-01",
       "name": "deploy-app-service",
@@ -206,11 +345,23 @@
           "enableAppInsights": {
             "value": "[parameters('enableAppInsights')]"
           },
-          "appInsightsInstrumentationKey": {
-            "value": "[parameters('appInsightsInstrumentationKey')]"
-          },
           "appInsightsConnectionString": {
-            "value": "[parameters('appInsightsConnectionString')]"
+            "value": "[coalesce(tryGet(tryGet(tryGet(if(parameters('enableAppInsights'), reference(resourceId('Microsoft.Resources/deployments', 'deploy-app-insights'), '2025-04-01'), null()), 'outputs'), 'appInsightsConnectionString'), 'value'), '')]"
+          },
+          "botId": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'deploy-bot-identity'), '2025-04-01').outputs.identityClientId.value]"
+          },
+          "botTenantId": {
+            "value": "[parameters('tenantId')]"
+          },
+          "oauthConnectionName": {
+            "value": "SsoConnection"
+          },
+          "azureAIFoundryEndpoint": {
+            "value": ""
+          },
+          "azureAIAgentId": {
+            "value": ""
           },
           "additionalAppSettings": {
             "value": "[parameters('additionalAppSettings')]"
@@ -223,7 +374,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.38.33.27573",
-              "templateHash": "5373310196031799932"
+              "templateHash": "12366820592564891781"
             }
           },
           "parameters": {
@@ -282,18 +433,43 @@
                 "description": "Enable Application Insights"
               }
             },
-            "appInsightsInstrumentationKey": {
-              "type": "string",
-              "defaultValue": "",
-              "metadata": {
-                "description": "Application Insights instrumentation key (optional)"
-              }
-            },
             "appInsightsConnectionString": {
               "type": "string",
               "defaultValue": "",
               "metadata": {
-                "description": "Application Insights connection string (optional)"
+                "description": "Application Insights connection string (for managed identity authentication)"
+              }
+            },
+            "botId": {
+              "type": "string",
+              "metadata": {
+                "description": "Bot ID (Managed Identity Client ID)"
+              }
+            },
+            "botTenantId": {
+              "type": "string",
+              "metadata": {
+                "description": "Bot Tenant ID"
+              }
+            },
+            "oauthConnectionName": {
+              "type": "string",
+              "metadata": {
+                "description": "OAuth Connection Name"
+              }
+            },
+            "azureAIFoundryEndpoint": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Azure AI Foundry Project Endpoint (optional)"
+              }
+            },
+            "azureAIAgentId": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Azure AI Agent ID (optional)"
               }
             }
           },
@@ -328,7 +504,7 @@
                   "ftpsState": "FtpsOnly",
                   "linuxFxVersion": "DOTNETCORE|9.0",
                   "healthCheckPath": "/health",
-                  "appSettings": "[concat(createArray(createObject('name', 'ASPNETCORE_ENVIRONMENT', 'value', 'Production'), createObject('name', 'WEBSITE_RUN_FROM_PACKAGE', 'value', '1'), createObject('name', 'AZURE_CLIENT_ID', 'value', reference(parameters('MSIid'), '2023-01-31').clientId)), if(and(parameters('enableAppInsights'), not(empty(parameters('appInsightsConnectionString')))), createArray(createObject('name', 'APPLICATIONINSIGHTS_CONNECTION_STRING', 'value', parameters('appInsightsConnectionString')), createObject('name', 'ApplicationInsightsAgent_EXTENSION_VERSION', 'value', '~3'), createObject('name', 'XDT_MicrosoftApplicationInsights_Mode', 'value', 'recommended')), createArray()), if(and(parameters('enableAppInsights'), not(empty(parameters('appInsightsInstrumentationKey')))), createArray(createObject('name', 'APPINSIGHTS_INSTRUMENTATIONKEY', 'value', parameters('appInsightsInstrumentationKey'))), createArray()), parameters('additionalAppSettings'))]",
+                  "appSettings": "[concat(createArray(createObject('name', 'ASPNETCORE_ENVIRONMENT', 'value', 'Production'), createObject('name', 'WEBSITE_RUN_FROM_PACKAGE', 'value', '1'), createObject('name', 'AZURE_CLIENT_ID', 'value', reference(parameters('MSIid'), '2023-01-31').clientId), createObject('name', 'BOT_ID', 'value', parameters('botId')), createObject('name', 'BOT_TENANT_ID', 'value', parameters('botTenantId')), createObject('name', 'OAUTHCONNECTIONNAME', 'value', parameters('oauthConnectionName'))), if(and(parameters('enableAppInsights'), not(empty(parameters('appInsightsConnectionString')))), createArray(createObject('name', 'APPLICATIONINSIGHTS_CONNECTION_STRING', 'value', parameters('appInsightsConnectionString')), createObject('name', 'ApplicationInsightsAgent_EXTENSION_VERSION', 'value', '~3'), createObject('name', 'XDT_MicrosoftApplicationInsights_Mode', 'value', 'recommended')), createArray()), if(not(empty(parameters('azureAIFoundryEndpoint'))), createArray(createObject('name', 'AIServices__AzureAIFoundryProjectEndpoint', 'value', parameters('azureAIFoundryEndpoint'))), createArray()), if(not(empty(parameters('azureAIAgentId'))), createArray(createObject('name', 'AIServices__AgentID', 'value', parameters('azureAIAgentId'))), createArray()), parameters('additionalAppSettings'))]",
                   "cors": {
                     "allowedOrigins": [
                       "https://portal.azure.com",
@@ -380,6 +556,7 @@
         }
       },
       "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'deploy-app-insights')]",
         "[resourceId('Microsoft.Resources/deployments', 'deploy-bot-identity')]"
       ]
     },
@@ -851,7 +1028,7 @@
             "value": "[reference(resourceId('Microsoft.Resources/deployments', 'deploy-app-registration'), '2025-04-01').outputs.aadAppIdUri.value]"
           },
           "federatedCredentialSubject": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'deploy-app-registration'), '2025-04-01').outputs.fciSubject.value]"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'deploy-app-registration'), '2025-04-01').outputs.fciName.value]"
           },
           "scopes": {
             "value": "[format('{0}/access_as_user', reference(resourceId('Microsoft.Resources/deployments', 'deploy-app-registration'), '2025-04-01').outputs.aadAppIdUri.value)]"
@@ -870,7 +1047,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.38.33.27573",
-              "templateHash": "9164206223062964582"
+              "templateHash": "9760687786267362268"
             }
           },
           "parameters": {
@@ -960,7 +1137,7 @@
           "outputs": {
             "connectionName": {
               "type": "string",
-              "value": "[format('{0}/{1}', parameters('botServiceName'), parameters('connectionName'))]"
+              "value": "[parameters('connectionName')]"
             },
             "connectionId": {
               "type": "string",
@@ -997,10 +1174,6 @@
     },
     "identityId": {
       "type": "string",
-      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'deploy-bot-identity'), '2025-04-01').outputs.identityId.value]"
-    },
-    "identityClientId": {
-      "type": "string",
       "value": "[reference(resourceId('Microsoft.Resources/deployments', 'deploy-bot-identity'), '2025-04-01').outputs.identityClientId.value]"
     },
     "identityPrincipalId": {
@@ -1027,6 +1200,10 @@
       "type": "string",
       "value": "[reference(resourceId('Microsoft.Resources/deployments', 'deploy-app-service'), '2025-04-01').outputs.appServicePlanId.value]"
     },
+    "BOT_ID": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'deploy-bot-identity'), '2025-04-01').outputs.identityClientId.value]"
+    },
     "botServiceName": {
       "type": "string",
       "value": "[variables('botServiceName')]"
@@ -1035,53 +1212,33 @@
       "type": "string",
       "value": "[format('https://{0}/api/messages', reference(resourceId('Microsoft.Resources/deployments', 'deploy-app-service'), '2025-04-01').outputs.webAppHostName.value)]"
     },
-    "aadAppId": {
+    "AAD_APP_CLIENT_ID": {
       "type": "string",
       "value": "[reference(resourceId('Microsoft.Resources/deployments', 'deploy-app-registration'), '2025-04-01').outputs.aadAppId.value]"
     },
-    "aadAppObjectId": {
-      "type": "string",
-      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'deploy-app-registration'), '2025-04-01').outputs.aadAppObjectId.value]"
-    },
-    "aadAppIdUri": {
+    "AAD_APP_ID_URI": {
       "type": "string",
       "value": "[reference(resourceId('Microsoft.Resources/deployments', 'deploy-app-registration'), '2025-04-01').outputs.aadAppIdUri.value]"
-    },
-    "servicePrincipalId": {
-      "type": "string",
-      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'deploy-app-registration'), '2025-04-01').outputs.servicePrincipalId.value]"
     },
     "federatedCredentialName": {
       "type": "string",
       "value": "[reference(resourceId('Microsoft.Resources/deployments', 'deploy-app-registration'), '2025-04-01').outputs.fciName.value]"
     },
-    "oauthConnectionName": {
+    "appInsightsName": {
       "type": "string",
-      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'deploy-bot-oauth-connection'), '2025-04-01').outputs.connectionName.value]"
+      "value": "[coalesce(tryGet(tryGet(tryGet(if(parameters('enableAppInsights'), reference(resourceId('Microsoft.Resources/deployments', 'deploy-app-insights'), '2025-04-01'), null()), 'outputs'), 'appInsightsName'), 'value'), '')]"
     },
-    "oauthConnectionId": {
+    "appInsightsConnectionString": {
       "type": "string",
-      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'deploy-bot-oauth-connection'), '2025-04-01').outputs.connectionId.value]"
+      "value": "[coalesce(tryGet(tryGet(tryGet(if(parameters('enableAppInsights'), reference(resourceId('Microsoft.Resources/deployments', 'deploy-app-insights'), '2025-04-01'), null()), 'outputs'), 'appInsightsConnectionString'), 'value'), '')]"
     },
-    "oauthSettingId": {
+    "appInsightsInstrumentationKey": {
       "type": "string",
-      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'deploy-bot-oauth-connection'), '2025-04-01').outputs.settingId.value]"
+      "value": "[coalesce(tryGet(tryGet(tryGet(if(parameters('enableAppInsights'), reference(resourceId('Microsoft.Resources/deployments', 'deploy-app-insights'), '2025-04-01'), null()), 'outputs'), 'appInsightsInstrumentationKey'), 'value'), '')]"
     },
-    "deploymentSummary": {
-      "type": "object",
-      "value": {
-        "resourceBaseName": "[parameters('resourceBaseName')]",
-        "botDisplayName": "[parameters('botDisplayName')]",
-        "webAppUrl": "[format('https://{0}', reference(resourceId('Microsoft.Resources/deployments', 'deploy-app-service'), '2025-04-01').outputs.webAppHostName.value)]",
-        "botEndpoint": "[format('https://{0}/api/messages', reference(resourceId('Microsoft.Resources/deployments', 'deploy-app-service'), '2025-04-01').outputs.webAppHostName.value)]",
-        "aadAppId": "[reference(resourceId('Microsoft.Resources/deployments', 'deploy-app-registration'), '2025-04-01').outputs.aadAppId.value]",
-        "identityClientId": "[reference(resourceId('Microsoft.Resources/deployments', 'deploy-bot-identity'), '2025-04-01').outputs.identityClientId.value]",
-        "teamsManifestUpdates": {
-          "botId": "[reference(resourceId('Microsoft.Resources/deployments', 'deploy-bot-identity'), '2025-04-01').outputs.identityClientId.value]",
-          "webApplicationInfoId": "[reference(resourceId('Microsoft.Resources/deployments', 'deploy-app-registration'), '2025-04-01').outputs.aadAppId.value]",
-          "webApplicationInfoResource": "[reference(resourceId('Microsoft.Resources/deployments', 'deploy-app-registration'), '2025-04-01').outputs.aadAppIdUri.value]"
-        }
-      }
+    "logAnalyticsWorkspaceName": {
+      "type": "string",
+      "value": "[coalesce(tryGet(tryGet(tryGet(if(parameters('enableAppInsights'), reference(resourceId('Microsoft.Resources/deployments', 'deploy-app-insights'), '2025-04-01'), null()), 'outputs'), 'logAnalyticsWorkspaceName'), 'value'), '')]"
     }
   }
 }

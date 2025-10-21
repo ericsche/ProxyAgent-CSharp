@@ -41,13 +41,7 @@ param botServiceSku string = 'F0'
 param tenantId string = tenant().tenantId
 
 @description('Enable Application Insights')
-param enableAppInsights bool = false
-
-@description('Application Insights instrumentation key (optional)')
-param appInsightsInstrumentationKey string = ''
-
-@description('Application Insights connection string (optional)')
-param appInsightsConnectionString string = ''
+param enableAppInsights bool = true
 
 @description('Additional app settings for the Web App')
 param additionalAppSettings array = []
@@ -67,6 +61,17 @@ module botIdentity 'modules/bot-managedidentity.bicep' = {
   }
 }
 
+// Step 1.5: Create Application Insights with Managed Identity (if enabled)
+module appInsights 'modules/appinsights.bicep' = if (enableAppInsights) {
+  name: 'deploy-app-insights'
+  params: {
+    resourceBaseName: resourceBaseName
+    location: location
+    identityPrincipalId: botIdentity.outputs.identityPrincipalId
+    applicationType: 'web'
+  }
+}
+
 // Step 2: Create App Service with the managed identity
 module appService 'modules/appservice.bicep' = {
   name: 'deploy-app-service'
@@ -78,8 +83,14 @@ module appService 'modules/appservice.bicep' = {
     webAppSKU: webAppSKU
     MSIid: botIdentity.outputs.identityId
     enableAppInsights: enableAppInsights
-    appInsightsInstrumentationKey: appInsightsInstrumentationKey
-    appInsightsConnectionString: appInsightsConnectionString
+    appInsightsConnectionString: appInsights.?outputs.?appInsightsConnectionString ?? ''
+    // Bot Configuration (for appsettings.json template variables)
+    botId: botIdentity.outputs.identityClientId
+    botTenantId: tenantId
+    oauthConnectionName: 'SsoConnection'
+    // AI Services Configuration (optional - add to parameters if needed)
+    azureAIFoundryEndpoint: ''
+    azureAIAgentId: ''
     additionalAppSettings: additionalAppSettings
   }
 }
@@ -154,5 +165,12 @@ output AAD_APP_CLIENT_ID string = appRegistration.outputs.aadAppId
 output AAD_APP_ID_URI string = appRegistration.outputs.aadAppIdUri
 output federatedCredentialName string = appRegistration.outputs.fciName
 // Note: fciSubject is used internally for OAuth connection but not exposed as output
+
+// Application Insights outputs (if enabled)
+output appInsightsName string = appInsights.?outputs.?appInsightsName ?? ''
+output appInsightsConnectionString string = appInsights.?outputs.?appInsightsConnectionString ?? ''
+output appInsightsInstrumentationKey string = appInsights.?outputs.?appInsightsInstrumentationKey ?? ''
+output logAnalyticsWorkspaceName string = appInsights.?outputs.?logAnalyticsWorkspaceName ?? ''
+
 
 

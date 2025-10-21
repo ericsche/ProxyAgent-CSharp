@@ -27,11 +27,25 @@ param additionalAppSettings array = []
 @description('Enable Application Insights')
 param enableAppInsights bool = true
 
-@description('Application Insights instrumentation key (optional)')
-param appInsightsInstrumentationKey string = ''
-
-@description('Application Insights connection string (optional)')
+@description('Application Insights connection string (for managed identity authentication)')
 param appInsightsConnectionString string = ''
+
+// Bot Configuration (for appsettings.json template variables)
+@description('Bot ID (Managed Identity Client ID)')
+param botId string
+
+@description('Bot Tenant ID')
+param botTenantId string
+
+@description('OAuth Connection Name')
+param oauthConnectionName string
+
+// AI Services Configuration (optional)
+@description('Azure AI Foundry Project Endpoint (optional)')
+param azureAIFoundryEndpoint string = ''
+
+@description('Azure AI Agent ID (optional)')
+param azureAIAgentId string = ''
 
 // App Service Plan - Compute resources for your Web App
 resource serverfarm 'Microsoft.Web/serverfarms@2023-12-01' = {
@@ -75,6 +89,71 @@ resource webApp 'Microsoft.Web/sites@2023-12-01' = {
           name: 'AZURE_CLIENT_ID'
           value: reference(MSIid, '2023-01-31').clientId
         }
+        //AgentApplication Settings and authorization
+        {
+          name: 'AgentApplication__StartTypingTimer'
+          value: true
+        }
+        {
+          name: 'AgentApplication__RemoveRecipientMention'
+          value: false
+        }
+        {
+          name: 'AgentApplication__NormalizeMentions'
+          value: false
+        }
+        {
+          name: 'AgentApplication__UserAuthorization__Handlers__SSO__Settings__AzureBotOAuthConnectionName'
+          value: oauthConnectionName
+        }
+        //TokenValidation
+        {
+          name: 'TokenValidation__Audiences__0'
+          value: botId
+        }
+        // Bot Configuration (matches appsettings.json template variables)
+        {
+          name:'Connections__BotServiceConnection__Settings__AuthType'
+          value: 'UserManagedIdentity'
+        }
+        {
+          name: 'Connections__BotServiceConnection__Settings__ClientId'
+          value: botId
+        }
+        {
+          name: 'Connections__BotServiceConnection__Settings__TenantId'
+          value: botTenantId
+        }
+                {
+          name: 'Connections__BotServiceConnection__Settings__Scopes__0'
+          value: 'https://api.botframework.com/.default'
+        } 
+        //ConnectionsMap
+        {
+          name:'ConnectionsMap__ServiceUrl'
+          value: '*'
+        }
+        {
+          name:'ConnectionsMap__Connection'
+          value: 'BotServiceConnection'
+        }
+        //Logging
+        {
+          name: 'Logging__LogLevel__Default'
+          value:'Information'
+        }
+        {
+          name: 'Logging__LogLevel__Microsoft.AspNetCore'
+          value:'Warning'
+        }
+                {
+          name: 'Logging__LogLevel__Microsoft.Agents'
+          value: 'Warning'
+        }
+                {
+          name: 'Logging__LogLevel__Microsoft.Hosting.Lifetime'
+          value: 'Information'
+        }
       ], enableAppInsights && !empty(appInsightsConnectionString) ? [
         {
           name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
@@ -88,10 +167,15 @@ resource webApp 'Microsoft.Web/sites@2023-12-01' = {
           name: 'XDT_MicrosoftApplicationInsights_Mode'
           value: 'recommended'
         }
-      ] : [], enableAppInsights && !empty(appInsightsInstrumentationKey) ? [
+      ] : [], !empty(azureAIFoundryEndpoint) ? [
         {
-          name: 'APPINSIGHTS_INSTRUMENTATIONKEY'
-          value: appInsightsInstrumentationKey
+          name: 'AIServices__AzureAIFoundryProjectEndpoint'
+          value: azureAIFoundryEndpoint
+        }
+      ] : [], !empty(azureAIAgentId) ? [
+        {
+          name: 'AIServices__AgentID'
+          value: azureAIAgentId
         }
       ] : [], additionalAppSettings)
       cors: {
