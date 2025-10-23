@@ -87,7 +87,7 @@ module appService 'modules/appservice.bicep' = {
     // Bot Configuration (for appsettings.json template variables)
     botId: botIdentity.outputs.identityClientId
     botTenantId: tenantId
-    oauthConnectionName: 'SsoConnection'
+    oauthConnectionName: 'aifoundryaccess'
     // AI Services Configuration (optional - add to parameters if needed)
     azureAIFoundryEndpoint: ''
     azureAIAgentId: ''
@@ -139,6 +139,22 @@ module botOAuthConnection 'modules/bot-oauth-connection.bicep' = {
   }
 }
 
+// Step 6: Configure OAuth Connection with Azure AD v2 and Federated Credentials For Azure AI Foundy
+// Note: This is used to ask directly the access token to ABS vs hosting a secure client and do an OBO Flow. It is simpler, leaner and ABS handle concent & caching for us.
+module botOAuthConnectionAIFoundry 'modules/bot-oauth-connection.bicep' = {
+  name: 'deploy-bot-oauth-connection-aifoundry'
+  params: {
+    botServiceName: botServiceName
+    connectionName: 'aifoundryaccess'
+    aadAppId: appRegistration.outputs.aadAppId
+    aadAppIdUri: appRegistration.outputs.aadAppIdUri
+    federatedCredentialSubject: appRegistration.outputs.fciName
+    scopes: 'https://ai.azure.com/user_impersonation'
+    tenantId: tenantId
+    location: 'global'
+  }
+}
+
 // Outputs for reference and further configuration
 output resourceBaseName string = resourceBaseName
 output location string = location
@@ -158,7 +174,9 @@ output appServicePlanId string = appService.outputs.appServicePlanId
 // Bot Service outputs
 output BOT_ID string = botIdentity.outputs.identityClientId
 output botServiceName string = botServiceName
-output botEndpoint string = 'https://${appService.outputs.webAppHostName}/api/messages'
+output bot_Endpoint string = 'https://${appService.outputs.webAppHostName}/api/messages'
+output Oauth_Connection_Name string =botOAuthConnection.name
+output AIFoundry_Connection_Name string = botOAuthConnectionAIFoundry.name
 
 // App Registration outputs
 output AAD_APP_CLIENT_ID string = appRegistration.outputs.aadAppId

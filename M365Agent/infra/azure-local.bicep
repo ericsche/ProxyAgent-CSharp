@@ -116,6 +116,27 @@ module botOAuthConnection 'modules/bot-oauth-connection.bicep' = if (isFirstTime
 }
 
 // ========================================
+// STEP 4: Create OAuth Connection with Federated Credentials For AI Foundry (First-time only)
+// ========================================
+// Only deployed when ssoAppId parameter is empty (first-time deployment)
+module botOAuthConnectionAIfoundry 'modules/bot-oauth-connection.bicep' = if (isFirstTimeDeployment) {
+  name: 'deploy-bot-oauth-connection-local'
+  params: {
+    botServiceName: botServiceName
+    connectionName: 'aifoundryaccess'
+    aadAppId: ssoAppRegistration!.outputs.aadAppId
+    aadAppIdUri: ssoAppRegistration!.outputs.aadAppIdUri
+    federatedCredentialSubject: ssoAppRegistration!.outputs.fciSubject
+    scopes: 'https://ai.azure.com/user_impersonation'
+    tenantId: tenantId
+    location: 'global'
+  }
+  dependsOn: [
+    botService
+  ]
+}
+
+// ========================================
 // OUTPUTS
 // ========================================
 
@@ -137,8 +158,7 @@ output ssoFederatedCredentialName string = isFirstTimeDeployment ? ssoAppRegistr
 
 // OAuth Connection outputs (only available on first-time deployment)
 output oauth_Connection_Name string = isFirstTimeDeployment ? botOAuthConnection!.outputs.connectionName : 'SsoConnection'
-output oauthConnectionId string = isFirstTimeDeployment ? botOAuthConnection!.outputs.connectionId : ''
-output oauthSettingId string = isFirstTimeDeployment ? botOAuthConnection!.outputs.settingId : ''
+output AIFoundry_Connection_Name string = isFirstTimeDeployment ? botOAuthConnectionAIfoundry!.outputs.connectionId : 'aifoundryaccess'
 
 // Local development configuration summary
 output localDevSummary object = {
