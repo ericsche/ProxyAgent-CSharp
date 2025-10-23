@@ -5,23 +5,32 @@
     "_generator": {
       "name": "bicep",
       "version": "0.38.33.27573",
-      "templateHash": "14431877646806547491"
+      "templateHash": "16409597920477405192"
     }
   },
   "parameters": {
-    "resourceBaseName": {
+    "botName": {
       "type": "string",
-      "minLength": 4,
-      "maxLength": 20,
       "metadata": {
-        "description": "Used to generate names for all resources"
+        "description": "Name of the bot (used for display and resource naming)"
       }
     },
-    "botDisplayName": {
+    "botId": {
       "type": "string",
-      "maxLength": 42,
       "metadata": {
-        "description": "Display name for the bot"
+        "description": "The Bot ID (Microsoft App ID) - provided by Microsoft 365 Agents Toolkit"
+      }
+    },
+    "botEndpoint": {
+      "type": "string",
+      "metadata": {
+        "description": "Bot messaging endpoint (dev tunnel URL, e.g., https://abc123.devtunnels.ms:5000/api/messages)"
+      }
+    },
+    "tenantId": {
+      "type": "string",
+      "metadata": {
+        "description": "Tenant ID for single-tenant bot configuration"
       }
     },
     "location": {
@@ -34,49 +43,72 @@
     "botServiceSku": {
       "type": "string",
       "defaultValue": "F0",
-      "allowedValues": [
-        "F0",
-        "S1"
-      ],
       "metadata": {
-        "description": "The SKU for the Bot Service"
+        "description": "The SKU for the Bot Service (F0 for local development)"
       }
     },
-    "tenantId": {
+    "ssoAppId": {
       "type": "string",
-      "defaultValue": "[tenant().tenantId]",
+      "defaultValue": "00000000-0000-0000-0000-000000000000",
       "metadata": {
-        "description": "Tenant ID for the Entra ID applications"
-      }
-    },
-    "localBotEndpoint": {
-      "type": "string",
-      "metadata": {
-        "description": "Local development bot messaging endpoint (e.g., https://yourtunnel.ngrok.io/api/messages)"
+        "description": "SSO App ID - use 00000000-0000-0000-0000-000000000000 for first-time deployment, provide actual GUID to skip SSO/OAuth creation"
       }
     }
   },
   "variables": {
-    "botServiceName": "[format('{0}-bot-local', parameters('resourceBaseName'))]",
-    "botAppRegName": "[format('{0}-bot-local', parameters('resourceBaseName'))]",
-    "ssoAppRegName": "[format('{0}-sso-local', parameters('resourceBaseName'))]"
+    "botServiceName": "[format('{0}-local', parameters('botName'))]",
+    "ssoAppName": "[format('{0}-sso-local', parameters('botName'))]",
+    "nullGuid": "00000000-0000-0000-0000-000000000000",
+    "isFirstTimeDeployment": "[equals(parameters('ssoAppId'), variables('nullGuid'))]"
   },
   "resources": [
     {
+      "type": "Microsoft.BotService/botServices",
+      "apiVersion": "2021-03-01",
+      "name": "[variables('botServiceName')]",
+      "kind": "azurebot",
+      "location": "global",
+      "properties": {
+        "displayName": "[parameters('botName')]",
+        "endpoint": "[parameters('botEndpoint')]",
+        "msaAppId": "[parameters('botId')]",
+        "msaAppTenantId": "[parameters('tenantId')]",
+        "msaAppType": "SingleTenant"
+      },
+      "sku": {
+        "name": "[parameters('botServiceSku')]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'deploy-bot-service-principal-local')]"
+      ]
+    },
+    {
+      "type": "Microsoft.BotService/botServices/channels",
+      "apiVersion": "2021-03-01",
+      "name": "[format('{0}/{1}', variables('botServiceName'), 'MsTeamsChannel')]",
+      "location": "global",
+      "properties": {
+        "channelName": "MsTeamsChannel"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.BotService/botServices', variables('botServiceName'))]"
+      ]
+    },
+    {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2025-04-01",
-      "name": "deploy-bot-app-registration",
+      "name": "deploy-bot-service-principal-local",
       "properties": {
         "expressionEvaluationOptions": {
           "scope": "inner"
         },
         "mode": "Incremental",
         "parameters": {
-          "appName": {
-            "value": "[variables('botAppRegName')]"
+          "appId": {
+            "value": "[parameters('botId')]"
           },
-          "tenantId": {
-            "value": "[parameters('tenantId')]"
+          "displayName": {
+            "value": "[format('{0}-bot-local', parameters('botName'))]"
           }
         },
         "template": {
@@ -87,20 +119,20 @@
             "_generator": {
               "name": "bicep",
               "version": "0.38.33.27573",
-              "templateHash": "16033667440759400277"
+              "templateHash": "7731494046936114432"
             }
           },
           "parameters": {
-            "appName": {
+            "appId": {
               "type": "string",
               "metadata": {
-                "description": "Application name for the bot Entra ID app registration"
+                "description": "The App ID (Client ID) of the existing application registration"
               }
             },
-            "tenantId": {
+            "displayName": {
               "type": "string",
               "metadata": {
-                "description": "Tenant ID where the application will be registered"
+                "description": "Display name for the service principal"
               }
             }
           },
@@ -111,198 +143,42 @@
             }
           },
           "resources": {
-            "botApplication": {
-              "import": "microsoftGraphV1",
-              "type": "Microsoft.Graph/applications@v1.0",
-              "properties": {
-                "displayName": "[parameters('appName')]",
-                "uniqueName": "[parameters('appName')]",
-                "signInAudience": "AzureADMyOrg",
-                "web": {
-                  "redirectUris": [],
-                  "implicitGrantSettings": {
-                    "enableIdTokenIssuance": false,
-                    "enableAccessTokenIssuance": false
-                  }
-                },
-                "requiredResourceAccess": []
-              }
-            },
-            "botServicePrincipal": {
+            "servicePrincipal": {
               "import": "microsoftGraphV1",
               "type": "Microsoft.Graph/servicePrincipals@v1.0",
               "properties": {
-                "appId": "[reference('botApplication').appId]",
+                "appId": "[parameters('appId')]",
                 "accountEnabled": true,
-                "displayName": "[parameters('appName')]",
+                "displayName": "[parameters('displayName')]",
                 "servicePrincipalType": "Application",
                 "tags": [
                   "WindowsAzureActiveDirectoryIntegratedApp"
                 ]
-              },
-              "dependsOn": [
-                "botApplication"
-              ]
+              }
             }
           },
           "outputs": {
-            "appId": {
-              "type": "string",
-              "value": "[reference('botApplication').appId]"
-            },
-            "objectId": {
-              "type": "string",
-              "value": "[reference('botApplication').id]"
-            },
             "servicePrincipalId": {
               "type": "string",
-              "value": "[reference('botServicePrincipal').id]"
+              "value": "[reference('servicePrincipal').id]"
             },
-            "tenantId": {
+            "servicePrincipalObjectId": {
               "type": "string",
-              "value": "[parameters('tenantId')]"
+              "value": "[reference('servicePrincipal').id]"
+            },
+            "appId": {
+              "type": "string",
+              "value": "[reference('servicePrincipal').appId]"
             }
           }
         }
       }
     },
     {
+      "condition": "[variables('isFirstTimeDeployment')]",
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2025-04-01",
-      "name": "deploy-azure-bot-local",
-      "properties": {
-        "expressionEvaluationOptions": {
-          "scope": "inner"
-        },
-        "mode": "Incremental",
-        "parameters": {
-          "resourceBaseName": {
-            "value": "[parameters('resourceBaseName')]"
-          },
-          "botDisplayName": {
-            "value": "[parameters('botDisplayName')]"
-          },
-          "botServiceName": {
-            "value": "[variables('botServiceName')]"
-          },
-          "botServiceSku": {
-            "value": "[parameters('botServiceSku')]"
-          },
-          "botAppId": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'deploy-bot-app-registration'), '2025-04-01').outputs.appId.value]"
-          },
-          "botAppTenantId": {
-            "value": "[parameters('tenantId')]"
-          },
-          "botEndpoint": {
-            "value": "[parameters('localBotEndpoint')]"
-          }
-        },
-        "template": {
-          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-          "contentVersion": "1.0.0.0",
-          "metadata": {
-            "_generator": {
-              "name": "bicep",
-              "version": "0.38.33.27573",
-              "templateHash": "7681999764990195613"
-            }
-          },
-          "parameters": {
-            "resourceBaseName": {
-              "type": "string",
-              "minLength": 4,
-              "maxLength": 20,
-              "metadata": {
-                "description": "Used to generate names for all resources in this file"
-              }
-            },
-            "botDisplayName": {
-              "type": "string",
-              "maxLength": 42
-            },
-            "botServiceName": {
-              "type": "string",
-              "defaultValue": "[parameters('resourceBaseName')]"
-            },
-            "botServiceSku": {
-              "type": "string",
-              "defaultValue": "F0"
-            },
-            "botAppId": {
-              "type": "string",
-              "metadata": {
-                "description": "The bot application (client) ID from the bot app registration"
-              }
-            },
-            "botAppTenantId": {
-              "type": "string",
-              "metadata": {
-                "description": "The tenant ID for the bot application"
-              }
-            },
-            "botEndpoint": {
-              "type": "string",
-              "metadata": {
-                "description": "The bot messaging endpoint (e.g., https://yourtunnel.ngrok.io/api/messages)"
-              }
-            }
-          },
-          "resources": [
-            {
-              "type": "Microsoft.BotService/botServices",
-              "apiVersion": "2021-03-01",
-              "name": "[parameters('botServiceName')]",
-              "kind": "azurebot",
-              "location": "global",
-              "properties": {
-                "displayName": "[parameters('botDisplayName')]",
-                "endpoint": "[parameters('botEndpoint')]",
-                "msaAppId": "[parameters('botAppId')]",
-                "msaAppTenantId": "[parameters('botAppTenantId')]",
-                "msaAppType": "SingleTenant"
-              },
-              "sku": {
-                "name": "[parameters('botServiceSku')]"
-              }
-            },
-            {
-              "type": "Microsoft.BotService/botServices/channels",
-              "apiVersion": "2021-03-01",
-              "name": "[format('{0}/{1}', parameters('botServiceName'), 'MsTeamsChannel')]",
-              "location": "global",
-              "properties": {
-                "channelName": "MsTeamsChannel"
-              },
-              "dependsOn": [
-                "[resourceId('Microsoft.BotService/botServices', parameters('botServiceName'))]"
-              ]
-            }
-          ],
-          "outputs": {
-            "botServiceName": {
-              "type": "string",
-              "value": "[parameters('botServiceName')]"
-            },
-            "botServiceId": {
-              "type": "string",
-              "value": "[resourceId('Microsoft.BotService/botServices', parameters('botServiceName'))]"
-            },
-            "botEndpoint": {
-              "type": "string",
-              "value": "[parameters('botEndpoint')]"
-            }
-          }
-        }
-      },
-      "dependsOn": [
-        "[resourceId('Microsoft.Resources/deployments', 'deploy-bot-app-registration')]"
-      ]
-    },
-    {
-      "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2025-04-01",
-      "name": "deploy-sso-app-registration",
+      "name": "deploy-sso-app-registration-local",
       "properties": {
         "expressionEvaluationOptions": {
           "scope": "inner"
@@ -310,10 +186,10 @@
         "mode": "Incremental",
         "parameters": {
           "aadAppName": {
-            "value": "[variables('ssoAppRegName')]"
+            "value": "[variables('ssoAppName')]"
           },
           "botId": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'deploy-bot-app-registration'), '2025-04-01').outputs.appId.value]"
+            "value": "[parameters('botId')]"
           },
           "tenantId": {
             "value": "[parameters('tenantId')]"
@@ -620,16 +496,13 @@
             }
           }
         }
-      },
-      "dependsOn": [
-        "[resourceId('Microsoft.Resources/deployments', 'deploy-azure-bot-local')]",
-        "[resourceId('Microsoft.Resources/deployments', 'deploy-bot-app-registration')]"
-      ]
+      }
     },
     {
+      "condition": "[variables('isFirstTimeDeployment')]",
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2025-04-01",
-      "name": "deploy-bot-oauth-connection",
+      "name": "deploy-bot-oauth-connection-local",
       "properties": {
         "expressionEvaluationOptions": {
           "scope": "inner"
@@ -643,16 +516,16 @@
             "value": "SsoConnection"
           },
           "aadAppId": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'deploy-sso-app-registration'), '2025-04-01').outputs.aadAppId.value]"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'deploy-sso-app-registration-local'), '2025-04-01').outputs.aadAppId.value]"
           },
           "aadAppIdUri": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'deploy-sso-app-registration'), '2025-04-01').outputs.aadAppIdUri.value]"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'deploy-sso-app-registration-local'), '2025-04-01').outputs.aadAppIdUri.value]"
           },
           "federatedCredentialSubject": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'deploy-sso-app-registration'), '2025-04-01').outputs.fciSubject.value]"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'deploy-sso-app-registration-local'), '2025-04-01').outputs.fciSubject.value]"
           },
           "scopes": {
-            "value": "[format('{0}/access_as_user', reference(resourceId('Microsoft.Resources/deployments', 'deploy-sso-app-registration'), '2025-04-01').outputs.aadAppIdUri.value)]"
+            "value": "[format('{0}/access_as_user', reference(resourceId('Microsoft.Resources/deployments', 'deploy-sso-app-registration-local'), '2025-04-01').outputs.aadAppIdUri.value)]"
           },
           "tenantId": {
             "value": "[parameters('tenantId')]"
@@ -668,7 +541,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.38.33.27573",
-              "templateHash": "9164206223062964582"
+              "templateHash": "9760687786267362268"
             }
           },
           "parameters": {
@@ -758,7 +631,7 @@
           "outputs": {
             "connectionName": {
               "type": "string",
-              "value": "[format('{0}/{1}', parameters('botServiceName'), parameters('connectionName'))]"
+              "value": "[parameters('connectionName')]"
             },
             "connectionId": {
               "type": "string",
@@ -776,88 +649,81 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Resources/deployments', 'deploy-sso-app-registration')]"
+        "[resourceId('Microsoft.BotService/botServices', variables('botServiceName'))]",
+        "[resourceId('Microsoft.Resources/deployments', 'deploy-sso-app-registration-local')]"
       ]
     }
   ],
   "outputs": {
-    "resourceBaseName": {
-      "type": "string",
-      "value": "[parameters('resourceBaseName')]"
-    },
-    "location": {
-      "type": "string",
-      "value": "[parameters('location')]"
-    },
-    "botAppId": {
-      "type": "string",
-      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'deploy-bot-app-registration'), '2025-04-01').outputs.appId.value]"
-    },
-    "botAppObjectId": {
-      "type": "string",
-      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'deploy-bot-app-registration'), '2025-04-01').outputs.objectId.value]"
-    },
     "botServiceName": {
       "type": "string",
       "value": "[variables('botServiceName')]"
     },
+    "botServiceId": {
+      "type": "string",
+      "value": "[resourceId('Microsoft.BotService/botServices', variables('botServiceName'))]"
+    },
     "botEndpoint": {
       "type": "string",
-      "value": "[parameters('localBotEndpoint')]"
+      "value": "[parameters('botEndpoint')]"
     },
-    "ssoAppId": {
+    "botId": {
       "type": "string",
-      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'deploy-sso-app-registration'), '2025-04-01').outputs.aadAppId.value]"
+      "value": "[parameters('botId')]"
+    },
+    "tenantId": {
+      "type": "string",
+      "value": "[parameters('tenantId')]"
+    },
+    "botServicePrincipalId": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'deploy-bot-service-principal-local'), '2025-04-01').outputs.servicePrincipalId.value]"
+    },
+    "sso_App_Id": {
+      "type": "string",
+      "value": "[if(variables('isFirstTimeDeployment'), reference(resourceId('Microsoft.Resources/deployments', 'deploy-sso-app-registration-local'), '2025-04-01').outputs.aadAppId.value, parameters('ssoAppId'))]"
     },
     "ssoAppObjectId": {
       "type": "string",
-      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'deploy-sso-app-registration'), '2025-04-01').outputs.aadAppObjectId.value]"
+      "value": "[if(variables('isFirstTimeDeployment'), reference(resourceId('Microsoft.Resources/deployments', 'deploy-sso-app-registration-local'), '2025-04-01').outputs.aadAppObjectId.value, '')]"
     },
-    "ssoAppIdUri": {
+    "sso_App_Id_Uri": {
       "type": "string",
-      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'deploy-sso-app-registration'), '2025-04-01').outputs.aadAppIdUri.value]"
+      "value": "[if(variables('isFirstTimeDeployment'), reference(resourceId('Microsoft.Resources/deployments', 'deploy-sso-app-registration-local'), '2025-04-01').outputs.aadAppIdUri.value, '')]"
     },
     "ssoServicePrincipalId": {
       "type": "string",
-      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'deploy-sso-app-registration'), '2025-04-01').outputs.servicePrincipalId.value]"
+      "value": "[if(variables('isFirstTimeDeployment'), reference(resourceId('Microsoft.Resources/deployments', 'deploy-sso-app-registration-local'), '2025-04-01').outputs.servicePrincipalId.value, '')]"
     },
     "ssoFederatedCredentialName": {
       "type": "string",
-      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'deploy-sso-app-registration'), '2025-04-01').outputs.fciName.value]"
+      "value": "[if(variables('isFirstTimeDeployment'), reference(resourceId('Microsoft.Resources/deployments', 'deploy-sso-app-registration-local'), '2025-04-01').outputs.fciName.value, '')]"
     },
-    "oauthConnectionName": {
+    "oauth_Connection_Name": {
       "type": "string",
-      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'deploy-bot-oauth-connection'), '2025-04-01').outputs.connectionName.value]"
+      "value": "[if(variables('isFirstTimeDeployment'), reference(resourceId('Microsoft.Resources/deployments', 'deploy-bot-oauth-connection-local'), '2025-04-01').outputs.connectionName.value, 'SsoConnection')]"
     },
     "oauthConnectionId": {
       "type": "string",
-      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'deploy-bot-oauth-connection'), '2025-04-01').outputs.connectionId.value]"
+      "value": "[if(variables('isFirstTimeDeployment'), reference(resourceId('Microsoft.Resources/deployments', 'deploy-bot-oauth-connection-local'), '2025-04-01').outputs.connectionId.value, '')]"
     },
     "oauthSettingId": {
       "type": "string",
-      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'deploy-bot-oauth-connection'), '2025-04-01').outputs.settingId.value]"
+      "value": "[if(variables('isFirstTimeDeployment'), reference(resourceId('Microsoft.Resources/deployments', 'deploy-bot-oauth-connection-local'), '2025-04-01').outputs.settingId.value, '')]"
     },
     "localDevSummary": {
       "type": "object",
       "value": {
-        "resourceBaseName": "[parameters('resourceBaseName')]",
-        "botDisplayName": "[parameters('botDisplayName')]",
-        "botEndpoint": "[parameters('localBotEndpoint')]",
-        "botAppId": "[reference(resourceId('Microsoft.Resources/deployments', 'deploy-bot-app-registration'), '2025-04-01').outputs.appId.value]",
-        "botAppPassword": "***(CREATE MANUALLY IN PORTAL)***",
-        "ssoAppId": "[reference(resourceId('Microsoft.Resources/deployments', 'deploy-sso-app-registration'), '2025-04-01').outputs.aadAppId.value]",
-        "appsettingsJson": {
-          "MicrosoftAppType": "SingleTenant",
-          "MicrosoftAppId": "[reference(resourceId('Microsoft.Resources/deployments', 'deploy-bot-app-registration'), '2025-04-01').outputs.appId.value]",
-          "MicrosoftAppPassword": "***(CREATE MANUALLY IN PORTAL)***",
-          "MicrosoftAppTenantId": "[parameters('tenantId')]",
-          "ConnectionName": "SsoConnection"
-        },
-        "teamsManifestUpdates": {
-          "botId": "[reference(resourceId('Microsoft.Resources/deployments', 'deploy-bot-app-registration'), '2025-04-01').outputs.appId.value]",
-          "webApplicationInfoId": "[reference(resourceId('Microsoft.Resources/deployments', 'deploy-sso-app-registration'), '2025-04-01').outputs.aadAppId.value]",
-          "webApplicationInfoResource": "[reference(resourceId('Microsoft.Resources/deployments', 'deploy-sso-app-registration'), '2025-04-01').outputs.aadAppIdUri.value]"
-        }
+        "botName": "[parameters('botName')]",
+        "botServiceName": "[variables('botServiceName')]",
+        "botEndpoint": "[parameters('botEndpoint')]",
+        "botId": "[parameters('botId')]",
+        "tenantId": "[parameters('tenantId')]",
+        "botServicePrincipalId": "[reference(resourceId('Microsoft.Resources/deployments', 'deploy-bot-service-principal-local'), '2025-04-01').outputs.servicePrincipalId.value]",
+        "ssoAppId": "[if(variables('isFirstTimeDeployment'), reference(resourceId('Microsoft.Resources/deployments', 'deploy-sso-app-registration-local'), '2025-04-01').outputs.aadAppId.value, parameters('ssoAppId'))]",
+        "ssoAppIdUri": "[if(variables('isFirstTimeDeployment'), reference(resourceId('Microsoft.Resources/deployments', 'deploy-sso-app-registration-local'), '2025-04-01').outputs.aadAppIdUri.value, '')]",
+        "oauthConnectionName": "SsoConnection",
+        "deploymentMode": "[if(variables('isFirstTimeDeployment'), 'First-time (created all resources)', 'Update (bot endpoint only)')]"
       }
     }
   }

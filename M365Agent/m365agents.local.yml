@@ -1,7 +1,7 @@
-# yaml-language-server: $schema=https://aka.ms/teams-toolkit/v1.7/yaml.schema.json
+# yaml-language-server: $schema=https://aka.ms/teams-toolkit/v1.8/yaml.schema.json
 # Visit https://aka.ms/teamsfx-v5.0-guide for details on this file
 # Visit https://aka.ms/teamsfx-actions for details on actions
-version: v1.7
+version: v1.8
 
 provision:
   # Creates a Teams app
@@ -14,13 +14,14 @@ provision:
     writeToEnvironmentFile:
       teamsAppId: TEAMS_APP_ID
 
+  
   # Create or reuse an existing Microsoft Entra application for bot.
   - uses: aadApp/create
     with:
       # The Microsoft Entra application's display name
       name: AzureAgentToM365ATK${{APP_NAME_SUFFIX}}
       generateClientSecret: true
-      signInAudience: AzureADMultipleOrgs
+      signInAudience: AzureADMyOrg
     writeToEnvironmentFile:
       # The Microsoft Entra application's client id created for bot.
       clientId: BOT_ID
@@ -28,6 +29,18 @@ provision:
       clientSecret: SECRET_BOT_PASSWORD
       # The Microsoft Entra application's object id created for bot.
       objectId: BOT_OBJECT_ID
+
+  # Deploy Azure infrastructure for local development (Bot Service + OAuth Connection)
+  # This creates: SSO App Registration + Azure Bot Service + OAuth Connection
+  - uses: arm/deploy
+    with:
+      subscriptionId: ${{AZURE_SUBSCRIPTION_ID}}
+      resourceGroupName: ${{AZURE_RESOURCE_GROUP_NAME}}
+      templates:
+        - path: ./infra/azure-local.bicep
+          parameters: ./infra/azure-local.parameters.json
+          deploymentName: Deploy-local-bot-infrastructure
+      bicepCliVersion: v0.38.33
 
   # Generate runtime appsettings to JSON file
   - uses: file/createOrUpdateJsonFile
@@ -38,22 +51,37 @@ provision:
           Audiences:
             ClientId: ${{BOT_ID}}
         Connections:
-          ServiceConnection:
+          BotServiceConnection:
             Settings:
               AuthType: "ClientSecret"
-              AuthorityEndpoint: "https://login.microsoftonline.com/botframework.com"
+              TenantId: ${{TEAMS_APP_TENANT_ID}}
               ClientId: ${{BOT_ID}}
               ClientSecret: ${{SECRET_BOT_PASSWORD}}
-
-  # Create or update the bot registration on dev.botframework.com
-  - uses: botFramework/create
-    with:
-      botId: ${{BOT_ID}}
-      name: AzureAgentToM365ATK
-      messagingEndpoint: ${{BOT_ENDPOINT}}/api/messages
-      description: ""
-      channels:
-        - name: msteams
+              Scopes: [
+                "https://api.botframework.com/.default"
+              ]
+        AgentApplication:
+          StartTypingTimer: true
+          RemoveRecipientMention: false
+          NormalizeMentions: false
+          UserAuthorization:
+            AutoSignIn: false
+            Handlers:
+              SSO:
+                Settings:
+                  AzureBotOAuthConnectionName: ${{OAUTHCONNECTIONNAME}}
+        ConnectionsMap:
+          - ServiceUrl: "*"
+            Connection: "BotServiceConnection"
+        Logging:
+          LogLevel:
+            Default: "Information"
+            Microsoft.AspNetCore: "Warning"
+            Microsoft.Agents: "Warning"
+            Microsoft.Hosting.Lifetime: "Information"
+        AIServices:
+          AzureAIFoundryProjectEndpoint: ${{AZURE_AI_FOUNDRY_PROJECT_ENDPOINT}}
+          AgentID: ${{AGENT_ID}}
 
   # Validate using manifest schema
   - uses: teamsApp/validateManifest
@@ -92,3 +120,6 @@ provision:
     writeToEnvironmentFile:
       titleId: M365_TITLE_ID
       appId: M365_APP_ID
+
+# There is no need to deploy anything for local development as the application runs locally
+deploy: []

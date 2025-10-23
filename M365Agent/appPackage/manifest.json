@@ -60,8 +60,8 @@
     }
   ],
   "webApplicationInfo": {
-    "id": "${{AAD_APP_CLIENT_ID}}",
-    "resource": "${{AAD_APP_ID_URI}}"
+    "id": "${{SSO_APP_ID}}",
+    "resource": "${{SSO_APP_ID_URI}}"
   },
   "composeExtensions": [
   ],
@@ -72,6 +72,6 @@
     "messageTeamMembers"
   ],
   "validDomains": [
-    "${{webAppHostName}}"
+    "${{BOT_DOMAIN}}"
   ]
 }

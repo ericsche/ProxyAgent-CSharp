@@ -1,0 +1,76 @@
+{
+    "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/vdevPreview/MicrosoftTeams.schema.json",
+    "manifestVersion": "devPreview",
+    "version": "1.0.0",
+    "id": "002e4a83-a582-4682-8b29-617bbb7728b0",
+    "developer": {
+        "name": "Teams App, Inc.",
+        "websiteUrl": "https://www.example.com",
+        "privacyUrl": "https://www.example.com/privacy",
+        "termsOfUseUrl": "https://www.example.com/termofuse"
+    },
+    "name": {
+        "short": "AzureAgentToM365ATKlocal",
+        "full": "Azure Agent for Microsoft 365 Copilot"
+    },
+    "description": {
+        "short": "Azure-powered agent for Microsoft 365 Copilot",
+        "full": "Custom engine agent that integrates Azure services with Microsoft 365 Copilot for enhanced productivity"
+    },
+    "icons": {
+        "outline": "outline.png",
+        "color": "color.png"
+    },
+    "accentColor": "#FFFFFF",
+    "configurableTabs": [],
+    "staticTabs": [],
+    "bots": [
+        {
+            "botId": "ca2b1c19-e639-4f81-be32-dae94bd27587",
+            "isNotificationOnly": false,
+            "supportsFiles": false,
+            "scopes": [
+                "copilot",
+                "personal"
+            ],
+            "commandLists": [
+                {
+                    "scopes": [
+                        "copilot",
+                        "personal"
+                    ],
+                    "commands": [
+                        {
+                            "title": "How can you help me?",
+                            "description": "How can you help me?"
+                        },
+                        {
+                            "title": "MSFT in last 2 weeks",
+                            "description": "What was the MSFT stock value in the last 2 weeks?"
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "composeExtensions": [],
+    "permissions": [
+        "identity",
+        "messageTeamMembers"
+    ],
+    "validDomains": [
+        "58c2pcvv.euw.devtunnels.ms"
+    ],
+    "webApplicationInfo": {
+        "id": "bc6f676a-4dec-4517-b6ea-f3f0f0930c79",
+        "resource": "[object Object]"
+    },
+    "copilotAgents": {
+        "customEngineAgents": [
+            {
+                "id": "ca2b1c19-e639-4f81-be32-dae94bd27587",
+                "type": "bot"
+            }
+        ]
+    }
+}
