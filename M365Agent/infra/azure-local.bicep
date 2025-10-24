@@ -105,7 +105,7 @@ module botOAuthConnection 'modules/bot-oauth-connection.bicep' = if (isFirstTime
     connectionName: 'SsoConnection'
     aadAppId: ssoAppRegistration!.outputs.aadAppId
     aadAppIdUri: ssoAppRegistration!.outputs.aadAppIdUri
-    federatedCredentialSubject: ssoAppRegistration!.outputs.fciSubject
+    federatedCredentialSubject: ssoAppRegistration!.outputs.fciName
     scopes: '${ssoAppRegistration!.outputs.aadAppIdUri}/access_as_user'
     tenantId: tenantId
     location: 'global'
@@ -126,7 +126,7 @@ module botOAuthConnectionAIfoundry 'modules/bot-oauth-connection.bicep' = if (is
     connectionName: 'aifoundryaccess'
     aadAppId: ssoAppRegistration!.outputs.aadAppId
     aadAppIdUri: ssoAppRegistration!.outputs.aadAppIdUri
-    federatedCredentialSubject: ssoAppRegistration!.outputs.fciSubject
+    federatedCredentialSubject: ssoAppRegistration!.outputs.fciName
     scopes: 'https://ai.azure.com/user_impersonation'
     tenantId: tenantId
     location: 'global'
