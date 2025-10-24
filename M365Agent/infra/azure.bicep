@@ -50,7 +50,7 @@ param additionalAppSettings array = []
 var identityName = '${resourceBaseName}-identity'
 var webAppName = '${resourceBaseName}-app'
 var botServiceName = '${resourceBaseName}-bot'
-var aadAppName = '${resourceBaseName}-app-registration'
+var aadAppName = '${resourceBaseName}-sso'
 
 // Step 1: Create User Assigned Managed Identity for the bot
 module botIdentity 'modules/bot-managedidentity.bicep' = {
