@@ -167,7 +167,7 @@ output identityPrincipalId string = botIdentity.outputs.identityPrincipalId
 // App Service outputs
 output webAppName string = appService.outputs.webAppName
 output webAppId string = appService.outputs.webAppId
-output webAppHostName string = appService.outputs.webAppHostName
+output BOT_DOMAIN string = appService.outputs.webAppHostName
 output webAppUrl string = 'https://${appService.outputs.webAppHostName}'
 output appServicePlanId string = appService.outputs.appServicePlanId
 
@@ -179,8 +179,8 @@ output Oauth_Connection_Name string =botOAuthConnection.name
 output AIFoundry_Connection_Name string = botOAuthConnectionAIFoundry.name
 
 // App Registration outputs
-output AAD_APP_CLIENT_ID string = appRegistration.outputs.aadAppId
-output AAD_APP_ID_URI string = appRegistration.outputs.aadAppIdUri
+output SSO_APP_ID string = appRegistration.outputs.aadAppId
+output SSO_APP_ID_URI string = appRegistration.outputs.aadAppIdUri
 output federatedCredentialName string = appRegistration.outputs.fciName
 // Note: fciSubject is used internally for OAuth connection but not exposed as output
 
