@@ -144,7 +144,7 @@ module botOAuthConnectionAIfoundry 'modules/bot-oauth-connection.bicep' = if (is
 output botServiceName string = botService.name
 output botServiceId string = botService.id
 output botEndpoint string = botEndpoint
-output botId string = botId
+output bot_Id string = botId
 output tenantId string = tenantId
 output botServicePrincipalId string = botServicePrincipal.outputs.servicePrincipalId
 
