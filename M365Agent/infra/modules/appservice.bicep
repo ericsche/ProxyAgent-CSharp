@@ -154,6 +154,15 @@ resource webApp 'Microsoft.Web/sites@2023-12-01' = {
           name: 'Logging__LogLevel__Microsoft.Hosting.Lifetime'
           value: 'Information'
         }
+        // AI Services Configuration (optional)
+                {
+          name: 'AIServices__AzureAIFoundryProjectEndpoint'
+          value: azureAIFoundryEndpoint
+        }
+        {
+          name: 'AIServices__AgentID'
+          value: azureAIAgentId
+        }
       ], enableAppInsights && !empty(appInsightsConnectionString) ? [
         {
           name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
@@ -167,17 +176,7 @@ resource webApp 'Microsoft.Web/sites@2023-12-01' = {
           name: 'XDT_MicrosoftApplicationInsights_Mode'
           value: 'recommended'
         }
-      ] : [], !empty(azureAIFoundryEndpoint) ? [
-        {
-          name: 'AIServices__AzureAIFoundryProjectEndpoint'
-          value: azureAIFoundryEndpoint
-        }
-      ] : [], !empty(azureAIAgentId) ? [
-        {
-          name: 'AIServices__AgentID'
-          value: azureAIAgentId
-        }
-      ] : [], additionalAppSettings)
+      ] :       [], additionalAppSettings)
       cors: {
         allowedOrigins: [
           'https://portal.azure.com'
