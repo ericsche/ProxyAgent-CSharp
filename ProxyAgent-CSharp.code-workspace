@@ -5,7 +5,7 @@
       "path": "M365Agent"
     },
     {
-      "name": ".NET Application",
+      "name": "Agent C# Codebase",
       "path": "AzureAgentToM365ATK"
     },
     {
