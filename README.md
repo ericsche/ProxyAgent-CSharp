@@ -8,6 +8,47 @@ This solution demonstrates how to integrate an Azure AI Foundry agent with Micro
 
 ---
 
+## 🔄 Architecture Flow
+
+```mermaid
+sequenceDiagram
+    %% Groups
+    box "User"
+        participant U as Copilot User
+    end
+
+    box "Microsoft 365"
+        participant M as Microsoft 365 Copilot
+    end
+
+    box "Custom Engine Agent"
+        participant B as Azure Bot Service
+        participant P as Proxy Agent (Agents SDK)
+    end
+
+    box "Azure AI Foundry"
+        participant A as AI Agent Backend
+    end
+
+    %% Flow
+    U->>M: User prompt (e.g., "Create a report")
+    M->>B: Activity (Message)
+    B->>P: POST /api/messages (JWT)
+    P->>A: POST /process { prompt }
+    A-->>P: { content }
+    P-->>B: sendActivity(content)
+    B-->>M: Response
+    M-->>U: Display result
+```
+
+This proxy pattern allows you to:
+- ✅ Connect existing AI agents to Microsoft 365 Copilot
+- ✅ Maintain your AI logic in Azure AI Foundry
+- ✅ Provide seamless user experience in Teams and Copilot
+- ✅ Handle authentication and message routing automatically
+
+---
+
 ## 🚀 Quick Start
 
 Choose your deployment approach:
