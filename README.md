@@ -1,137 +1,413 @@
-# Azure AI Foundry Agent To M365 Copilot
-Making an Azure AI Foundry Agent available in M365 Copilot, using M365 Agents SDK/Toolkit.
+# Azure AI Foundry Agent for Microsoft 365
 
-View the video to see how it works and part of the tutorial:
+> **Making Azure AI Foundry Agents available in Microsoft 365 Copilot and Teams using the Microsoft 365 Agents Toolkit.**
 
-[![Video of the sample in action with some associated tutorial step-by-step](https://img.youtube.com/vi/U9Yv2vjKYbI/0.jpg)](https://www.youtube.com/watch?v=U9Yv2vjKYbI)
+This solution demonstrates how to integrate an Azure AI Foundry agent with Microsoft Teams and Microsoft 365 Copilot, providing a seamless experience for users to interact with powerful AI capabilities directly within their productivity tools.
 
-To use this sample, you'll need:
+[![Video Tutorial](https://img.youtube.com/vi/U9Yv2vjKYbI/0.jpg)](https://www.youtube.com/watch?v=U9Yv2vjKYbI)
 
-- Visual Studio 2022 17.14 (May 2025)
-- Microsoft 365 Agents Toolkit (feature named 'Microsoft 365 Agents Toolkit' in VS Installer under "Individual components")
-- Use the Azure CLI and 'az login' on your Azure tenant containing your Azure AI Foundry project. Your identity will be used to connect to the Azure AI Foundry Project.
+---
 
-Then, create an Agent in the Azure AI Foundry portal, under the project part. Configure the model, instructions, tools, etc. you'd like. 
+## 🚀 Quick Start
 
-If you're looking for a sample on how to create your Foundry agent, check the tutorial at the end to create the Stock Agent to query an API to get a specific stock value on a specific timeslot.
+Choose your deployment approach:
 
-If you're not familiar yet with Azure AI Foundry Projet & Agent Service:
+### Local Development (Debugging)
+Perfect for development and testing with breakpoints and hot reload.
+
+**See:** [M365Agent/LOCAL_DEPLOYMENT.md](M365Agent/LOCAL_DEPLOYMENT.md)
+
+```powershell
+# Start dev tunnel
+devtunnel host
+
+# Press F5 in VS Code or Visual Studio
+# Test in Microsoft 365 Agents Playground
+```
+
+### Azure Production Deployment
+Deploy your agent to Azure for production or dev environments.
+
+**See:** [M365Agent/AZURE_DEPLOYMENT.md](M365Agent/AZURE_DEPLOYMENT.md)
+
+```powershell
+cd M365Agent
+atk provision --env dev    # Provision Azure infrastructure
+atk deploy --env dev        # Deploy your bot application
+```
+
+---
+
+## 📋 Prerequisites
+
+### Required Tools
+- **.NET SDK 9.0** - [Download](https://dotnet.microsoft.com/download/dotnet/9.0)
+- **Azure CLI** - [Install Guide](https://learn.microsoft.com/cli/azure/install-azure-cli)
+- **Microsoft 365 Agents Toolkit CLI** - [Install Guide](https://aka.ms/m365agentstoolkit-cli)
+- **Visual Studio 2022** (17.14+) or **VS Code** with C# Dev Kit
+
+### Required Services
+- **Azure AI Foundry Project** with a configured agent
+- **Microsoft 365 tenant** with Teams or Copilot access
+- **Azure subscription** with appropriate permissions
+
+---
+
+## 🏗️ Solution Architecture
+
+This solution consists of two main components:
+
+### 1. Bot Application (`AzureAgentToM365ATK/`)
+.NET 9 bot application that serves as a proxy between Microsoft 365 and Azure AI Foundry.
+
+**Key Features:**
+- Connects to Azure AI Foundry Agent Service
+- Handles user authentication and SSO
+- Manages conversation threads and message routing
+- Built on Bot Framework SDK
+
+### 2. M365 Agents Toolkit Project (`M365Agent/`)
+Infrastructure and configuration for Microsoft 365 integration.
+
+**Includes:**
+- Bicep templates for Azure infrastructure deployment
+- Teams app manifest configuration
+- Environment configuration files
+- Automated provisioning and deployment workflows
+
+```
+ProxyAgent/
+├── AzureAgentToM365ATK/          # C# Bot Application (.NET 9)
+│   ├── Program.cs                 # Bot setup and configuration
+│   ├── Agents/
+│   │   └── AzureAgent.cs          # Azure AI Foundry integration
+│   ├── appsettings.json           # Configuration
+│   └── appsettings.Development.json  # Local dev settings
+│
+├── M365Agent/                     # Microsoft 365 Agents Toolkit Project
+│   ├── appPackage/                # Teams app package
+│   │   ├── manifest.json          # App manifest template
+│   │   └── build/                 # Generated manifests
+│   ├── infra/                     # Infrastructure as Code
+│   │   ├── azure.bicep            # Production deployment
+│   │   ├── azure-local.bicep      # Local development
+│   │   └── modules/               # Reusable Bicep modules
+│   ├── env/                       # Environment variables
+│   │   ├── .env.dev               # Azure environment
+│   │   └── .env.local             # Local environment
+│   ├── m365agents.yml             # Production orchestration
+│   ├── m365agents.local.yml       # Local orchestration
+│   ├── AZURE_DEPLOYMENT.md        # 📘 Azure deployment guide
+│   └── LOCAL_DEPLOYMENT.md        # 📘 Local development guide
+│
+├── images/                        # Screenshots and diagrams
+└── README.md                      # This file
+```
+
+---
+
+## 📚 Documentation
+
+### Deployment Guides
+
+| Guide | Purpose | When to Use |
+|-------|---------|-------------|
+| **[LOCAL_DEPLOYMENT.md](M365Agent/LOCAL_DEPLOYMENT.md)** | Complete local development setup with debugging | Development, testing, and debugging with breakpoints |
+| **[AZURE_DEPLOYMENT.md](M365Agent/AZURE_DEPLOYMENT.md)** | Complete Azure production deployment | Production, staging, or shared dev environments |
+
+### Technical References
+
+| Document | Purpose |
+|----------|---------|
+| **[GUID_ENCODER_GUIDE.md](M365Agent/infra/modules/GUID_ENCODER_GUIDE.md)** | GUID encoding for federated credentials |
+| **[BOT_OAUTH_CONNECTION.md](M365Agent/infra/modules/BOT_OAUTH_CONNECTION.md)** | OAuth connection configuration |
+
+---
+
+## ⚙️ Configuration
+
+### Azure AI Foundry Setup
+
+1. **Create an Agent in Azure AI Foundry Portal:**
+   - Configure the model (GPT-4, GPT-4 Turbo, etc.)
+   - Set instructions and personality
+   - Add tools and capabilities (Code Interpreter, Functions, etc.)
+   - Note the Agent ID (starts with `asst_...`)
+
+2. **Get Connection Details:**
+   - Project Endpoint URL
+   - Agent ID
+   
+   ![Azure AI Foundry Portal](images/screen000b.jpg)
+
+3. **Update Configuration:**
+   
+   Edit `AzureAgentToM365ATK/appsettings.json`:
+   ```json
+   {
+     "AzureAIFoundryProjectEndpoint": "https://your-project.cognitiveservices.azure.com/",
+     "AgentID": "asst_..."
+   }
+   ```
+
+### Authentication
+
+The bot uses **Azure Managed Identity** (production) or **Single Tenant + Client Secret** (local development) to authenticate with Azure AI Foundry.
+
+**Local Development:**
+```json
+{
+  "MicrosoftAppType": "SingleTenant",
+  "MicrosoftAppId": "<bot-app-id>",
+  "MicrosoftAppPassword": "<client-secret>",
+  "MicrosoftAppTenantId": "<tenant-id>"
+}
+```
+
+**Production (Managed Identity):**
+```json
+{
+  "MicrosoftAppType": "UserAssignedMSI",
+  "MicrosoftAppId": "<managed-identity-client-id>",
+  "MicrosoftAppTenantId": "<tenant-id>"
+}
+```
+
+---
+
+## 🎯 Usage Scenarios
+
+### In Microsoft Teams
+
+![Teams Integration](images/screen008.jpg)
+
+1. Install the app in Teams (via app package upload)
+2. Start a chat with the bot
+3. Ask questions or give commands
+4. The bot routes requests to your Azure AI Foundry agent
+5. Get AI-powered responses with context awareness
+
+### In Microsoft 365 Copilot
+
+![M365 Copilot Integration](images/screen009.jpg)
+
+1. Access via https://m365copilot.com/
+2. Find your agent in the left sidebar
+3. Click "Open with Copilot"
+4. Use natural language to interact with your Azure AI Foundry agent
+5. Seamless integration with other M365 services
+
+---
+
+## 🔧 Development Workflow
+
+### Local Development Cycle
+
+1. **Start Dev Tunnel** (for Teams connectivity)
+   ```powershell
+   devtunnel host
+   ```
+
+2. **Run Bot Locally** (F5 in VS Code/Visual Studio)
+   - Set breakpoints in your code
+   - Test in Microsoft 365 Agents Playground
+   - Iterate quickly without deployment
+
+3. **Test in Teams** (optional)
+   - Install app package in Teams
+   - Test end-to-end flow
+   - Debug with full context
+
+### Deployment to Azure
+
+1. **Configure Environment**
+   ```bash
+   # Edit M365Agent/env/.env.dev
+   AZURE_SUBSCRIPTION_ID=<your-subscription-id>
+   RESOURCE_SUFFIX=prod123
+   ```
+
+2. **Provision Infrastructure**
+   ```powershell
+   cd M365Agent
+   atk provision --env dev
+   ```
+
+3. **Deploy Application**
+   ```powershell
+   atk deploy --env dev
+   ```
+
+4. **Install in Teams/Copilot**
+   - Upload app package from `M365Agent/appPackage/build/`
+   - Test in production environment
+
+---
+
+## 🌟 Features
+
+### ✅ Single Sign-On (SSO)
+- Seamless authentication with federated credentials
+- No additional login prompts for users
+- Secure token exchange
+
+### ✅ Managed Identity (Production)
+- No passwords or secrets to manage
+- Automatic credential rotation
+- Enhanced security posture
+
+### ✅ Infrastructure as Code
+- Repeatable deployments with Bicep
+- Version-controlled infrastructure
+- Easy environment replication
+
+### ✅ Full Debugging Support
+- Set breakpoints in VS Code/Visual Studio
+- Hot reload for rapid iteration
+- Local testing with real Teams integration
+
+### ✅ Multi-Environment Support
+- Separate configurations for local, dev, staging, production
+- Environment-specific settings
+- Isolated deployments
+
+---
+
+## 💰 Cost Estimates
+
+### Local Development
+- **Azure Bot Service (F0):** Free (up to 10,000 messages/month)
+- **No App Service costs** (running locally)
+- **Total:** ~$0/month
+
+### Azure Production (Basic)
+- **App Service Plan (B1):** ~$13/month
+- **Bot Service (F0):** Free
+- **Managed Identity:** Free
+- **Total:** ~$13/month
+
+### Azure Production (Standard)
+- **App Service Plan (S1):** ~$70/month
+- **Bot Service (S1):** ~$0.50 per 1,000 messages
+- **Application Insights:** ~$2-10/month (if enabled)
+- **Total:** ~$70-100/month
+
+**See detailed cost breakdown in:** [AZURE_DEPLOYMENT.md](M365Agent/AZURE_DEPLOYMENT.md#cost-estimates)
+
+---
+
+## 🔍 Troubleshooting
+
+### Bot Not Responding
+- ✅ Check dev tunnel is running (local) or App Service is started (Azure)
+- ✅ Verify bot endpoint in Azure Bot Service configuration
+- ✅ Check application logs for errors
+- ✅ Verify Azure AI Foundry agent is accessible
+
+### SSO Not Working
+- ✅ Check `webApplicationInfo` in app manifest
+- ✅ Verify federated credentials in Entra ID app registration
+- ✅ Check pre-authorized clients include Teams client IDs
+- ✅ Review OAuth connection configuration
+
+### Deployment Failures
+- ✅ Verify Azure CLI login and subscription access
+- ✅ Check required permissions (Contributor + Application Administrator)
+- ✅ Review Bicep deployment errors in Azure Portal
+- ✅ Ensure resource names are unique
+
+**Full troubleshooting guides:**
+- [Local Development Troubleshooting](M365Agent/LOCAL_DEPLOYMENT.md#troubleshooting)
+- [Azure Deployment Troubleshooting](M365Agent/AZURE_DEPLOYMENT.md#troubleshooting)
+
+---
+
+## 📖 Additional Resources
+
+### Microsoft 365 Agents Toolkit
+- [Microsoft 365 Agents Toolkit Documentation](https://aka.ms/teams-toolkit-docs)
+- [Microsoft 365 Agents Toolkit GitHub](https://github.com/OfficeDev/TeamsFx)
+- [Teams App Development Guide](https://learn.microsoft.com/microsoftteams/platform/)
+
+### Azure AI Foundry
 - [Announcing Developer Essentials for Agents and Apps in Azure AI Foundry](https://devblogs.microsoft.com/foundry/announcing-developer-essentials-for-agents-and-apps-in-azure-ai-foundry/)
-- [Announcing General Availability of Azure AI Foundry Agent Service](https://techcommunity.microsoft.com/blog/azure-ai-services-blog/announcing-general-availability-of-azure-ai-foundry-agent-service/4414352) 
+- [Azure AI Foundry Agent Service (General Availability)](https://techcommunity.microsoft.com/blog/azure-ai-services-blog/announcing-general-availability-of-azure-ai-foundry-agent-service/4414352)
+- [Azure AI Foundry Documentation](https://learn.microsoft.com/azure/ai-services/)
 
-Go inside the Azure AI Foundry Portal and get the endpoint as well as the ID of your agent:
+### Bot Framework
+- [Bot Framework SDK for .NET](https://github.com/microsoft/botbuilder-dotnet)
+- [Azure Bot Service Documentation](https://learn.microsoft.com/azure/bot-service/)
+- [Connect a bot to Twilio (SMS)](https://learn.microsoft.com/azure/bot-service/bot-service-channel-connect-twilio?view=azure-bot-service-4.0)
+- [Connect a bot to Slack](https://learn.microsoft.com/azure/bot-service/bot-service-channel-connect-slack?view=azure-bot-service-4.0)
 
-![Key & Project Endpoint In Azure AI Foundry Project portal](images/screen000b.jpg)
+### Tutorials & Labs
+- [Build your own agent with the M365 Agents SDK and Semantic Kernel](https://microsoft.github.io/copilot-camp/pages/custom-engine/agents-sdk/)
+- [Video Tutorial: Azure AI Foundry Agent in M365 Copilot](https://www.youtube.com/watch?v=U9Yv2vjKYbI)
 
-![Key & Project Endpoint In Azure AI Foundry Project portal](images/screen000c.jpg)
+---
 
-Open the solution in VS 2022 and modify '**appsettings.json**' to update:
+## 🎓 Tutorial: Creating a Stock Agent in Azure AI Foundry
 
-- **AzureAIFoundryProjectEndpoint** with the value coming from your Azure AI Foundry portal
-- **AgentID** is the ID of the agent you've created. It starts by 'asst_....'
+This tutorial shows you how to create the same Stock Agent demonstrated in the video and screenshots above.
 
-![appsettings.json values](images/screen000.jpg)
+### Overview
 
-# Without M365 Agents Toolkit
+The Stock Agent retrieves historical stock market data using an external API and displays it in a conversational format. It demonstrates:
+- ✅ OpenAPI tool integration
+- ✅ API key authentication
+- ✅ Multi-agent orchestration
+- ✅ Code Interpreter for date calculations
 
-You'll need only the AzureAgentToM365ATK C# project. Select it as the project to debug and set the debugging to 'Start Project'
+---
 
-![debugging target in VS](images/screen001.jpg)
+### Step 1: Create the Main Stocks Agent
 
-Press F5. It will run locally the agent on your machine. 
+Create a new Agent in Azure AI Foundry Portal with the following details:
 
-You can install the [Bot Framework Emulator (v4)](https://github.com/microsoft/BotFramework-Emulator) and connect to the Agent using http://localhost:5130/api/messages 
+- **Name:** `Stocks Agent`
+- **Deployment:** GPT-4o, GPT-4.1, or GPT-4 Turbo
+- **Instructions:**
+  ```
+  You are an agent to search for a specific stock value using the function 'getTimeSeries'. 
+  Show the data in a table except if there is a unique value returned. 
+  end_date MUST be strictly superior to start_date, never send the same value for the 2 parameters.
+  ```
+- **Agent Description:** `Retrieve the value of a stock at a specific time`
 
-Next step is to make it available via a public URL with a Dev Tunnel, create a Azure Bot Registration in the Azure Portal and fill the various properties in '**appsettings.json**' such as the ClientID, BOT_ID, BOT_TENANT_ID, etc.
+---
 
-To deploy it in Teams or M365 Copilot, you'll need to also update the '**manifest.json**' file, zip the folder and upload it to Teams / M365 Copilot via the App maangement UX. 
+### Step 2: Create API Connection for Authentication
 
-Otherwise, use hte Microsoft 365 Agents Toolkit to simplify those steps. 
+The Stock API requires authentication via API key. We'll create a secure connection to manage this.
 
-# With M365 Agents Toolkit
+1. **Get an API Key:**
+   - Visit [Twelve Data](https://support.twelvedata.com/en/articles/5335783-trial)
+   - Register for a free API key **OR** use the demo key `demo` (limited to AAPL stock only)
 
-## With the M365 Agents Playground
-Select "Microsoft 365 Agents Playground (browser)" as the target.
+2. **Create Connection in Azure AI Foundry:**
+   - Go to **Management Center** → **New connection**
+   - Choose **Custom keys** at the end of the selection page
+   - Create key-value pair:
+     - **Name:** `apikey`
+     - **Value:** Your API key or `demo`
+     - ✅ Check **"is secret"**
+   - **Connection Name:** `StockAPI`
+   - Click **Save**
 
-Press F5, it will start the local ASP.NET server to host the agent on your machine and will open the 'Microsoft 365 Agents Playground' tool. Try that you can discuss with the agent in the emulator.
+---
 
-## Inside Microsoft Teams
-Now, to try the experience in Teams or Microsoft 365 Copilot, you need a M365 tenant and be logged in.
+### Step 3: Add OpenAPI Tool to the Agent
 
-Right-click the 'M365Agent' project, select 'Microsoft 365 Agents Toolkit', 'Select Microsoft 365 Account' and select the right account where you'd like to deploy your M365 Agent. 
+Go back to your **Stocks Agent** in the Azure AI Foundry project portal.
 
-If not done yet, create a Dev Tunnel and then select it.
+1. Click **Add an Action** → **OpenAPI 3.0 specified tool**
 
-![Dev Tunnel creation](images/screen004.jpg)
+2. **Configure the tool:**
+   - **Name:** `StocksAPI`
+   - **Description:** `API for retrieving historical time series data for financial instruments with optional filters like start_date, end_date, and outputsize.`
+   - **Authentication method:** Select **Connection** → Choose **StockAPI**
 
-And make it public & persistent:
-
-![Dev Tunnel creation](images/screen005.jpg)
-
-Change the debbuging target to 'Microsoft Teams (browser)'. If you have multiple Edge profiles, select the one matching the M365 Account you've been using before. You potentially need to create a new browser profile in VS by selecting 'Browse With...' and create a new decidated one for the targeted M365 Tenant.
-
-![Browse with...](images/screen002.jpg)
-
-Then, create a new browser profile using that:
-
-- Program: C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe
-- Arguments: --profile-directory="Profile x" (find the profile number matching your account)
-- Friendly name: Edge M365 Tenant
-
-![Browse with... values](images/screen003.jpg)
-
-Make this Edge profile as the default one.
-
-Press F5. 
-
-M365 Agents Toolkit should go through 8 different steps, to create various registration, packaging, sideloading, etc. And if everything worked fine, the selected browser will open to install the Agent in Teams. 
-
-![Teams bot installation](images/screen006.jpg)
-
-You should be able to open it either in Teams or M365 Copilot.
-
-![Teams bot installation](images/screen007.jpg)
-
-To try it directly in M365 Copilot by clicking on "Open with Copilot" or go to https://m365copilot.com/ if you started with Teams first. Your agent should be visible in the left trail. 
-
-Sample demo in Teams:
-![Teams Foundry Agent](images/screen008.jpg)
-
-Sample demo in M365 Copilot:
-![M365 Copilot Foundry Agent](images/screen009.jpg)
-
-# Additional ressources 
-
-* [Connect a bot to Twilio (SMS)](https://learn.microsoft.com/en-us/azure/bot-service/bot-service-channel-connect-twilio?view=azure-bot-service-4.0)
-* [Connect a bot to Slack](https://learn.microsoft.com/en-us/azure/bot-service/bot-service-channel-connect-slack?view=azure-bot-service-4.0)
-* A complete step-by-step lab on this topic: [Build your own agent with the M365 Agents SDK and Semantic Kernel](https://microsoft.github.io/copilot-camp/pages/custom-engine/agents-sdk/)
-
-# (Optional) Tutorial - Creating the Stock Agent in Azure AI Foundry
-
-If you'd like to use the same Azure AI Foundry Agent I've used in my video & screenshots, here are the steps to follow.
-
-* Create a new Agent in Foundry with the following details:
-    * Name: "Stocks Agent"
-    * Deployment: Use gpt-4o or gpt4.1 (works well also with gpt4-turbo)
-    * Instructions: "You are an agent to search for a specific stock value using the function 'getTimeSeries'. Show the data in a table except if there is a unique value returned. end_date MUST be strictly superior to start_date, never send the same value for the 2 parameters"
-    * Agent Description: "Retrieve the value of a stock at a specific time"
-
-* Create a connection to manage the auth key to the API we'd like to call:
-    * Follow the documentation: [Authenticating with API Key](https://learn.microsoft.com/en-us/azure/ai-foundry/agents/how-to/tools/openapi-spec#authenticating-with-api-key).
-    * The API we're going to use from https://support.twelvedata.com/en/articles/5335783-trial requires you to register to get a free key but you can also use the 'demo' key that will only be able to answer to a super limited set of stock values (such as AAPL). The key is provided via a query string parameter approach.
-    * Go to the "Management Center" of Foundry and create a "New connection"
-    * Choose "Custom keys" and the end of the selection page
-    * Create the key value pairs with "apikey" and the name and your own key as the value (or 'demo')
-    * Check "is secret"
-    * Name it "StockAPI" and save it
-
-Go back to your agent in the Azure AI Foundry projet portal. 
-
-* Add an Action to your agent using the "OpenAPI 3.0 specified tool"
-    * Name: "StocksAPI"
-    * Description: "API for retrieving historical time series data for financial instruments with optional filters like `start_date`, `end_date`, and `outputsize`."
-    * For the Authentication method, select "Connection" then choose the "StockAPI" connection we've just created above.
-    * Copy/paste the following OpenAPI descriptor for the API to call:
+3. **Copy/paste the following OpenAPI specification:**
 ```json
 {
   "openapi": "3.0.3",
@@ -289,34 +565,119 @@ Go back to your agent in the Azure AI Foundry projet portal.
   ]
 }
 ```
-* Click "Next" and then "Create Tool"
+4. Click **Next** → **Create Tool**
 
-Try to play with the agent int the Playground and ask *"What was the MSFT stock value in the last 2 weeks?"*.
+---
 
-![Agent using the wrong today's date](images/screen010.jpg)
+### Step 4: Test the Agent (First Attempt)
 
-You can see that the values are not on right period in time. It's because the agent doesn't know what is today's date. You need to help it. 
+Go to the **Playground** and test your agent:
 
-To solve that, we need to use the Code Interpreter action that will use Python to get today's date (or even to compute the right period in time required).
+```
+You: "What was the MSFT stock value in the last 2 weeks?"
+```
 
-* Create a new Agent with the following details:
-    * Name: "Get Today Date"
-    * Deployment: Use gpt-4o or gpt4.1 (works well also with gpt4-turbo)
-    * Instructions: "Using the code interpreter feature, please find the current today date and returns its value to be used by another agent"
-    * Agent Description: "Returns the current date"
-* Add the "Code Interpreter" action with the default parameters
-* Go back to your "Stocks Agent" 
-    * Add a "Connect agent"
-    * Select the "Get Today Date" agent and use "GetTodayDate" as the unique name.
-    * Steps to activate the agent: "Use this agent when you need to know the current today's date"
-    * Click "Add"
+![Agent using the wrong date](images/screen010.jpg)
 
-Go back to the Playground and ask the same question again. It now works as expected. 
+**Problem:** The agent doesn't know today's date, so the time period is incorrect!
+
+---
+
+### Step 5: Create Date Helper Agent
+
+To fix this, we'll create a helper agent that can determine the current date using Code Interpreter.
+
+1. **Create a new Agent:**
+   - **Name:** `Get Today Date`
+   - **Deployment:** GPT-4o, GPT-4.1, or GPT-4 Turbo
+   - **Instructions:**
+     ```
+     Using the code interpreter feature, please find the current today date and 
+     returns its value to be used by another agent
+     ```
+   - **Agent Description:** `Returns the current date`
+
+2. **Add Code Interpreter:**
+   - Click **Add an Action** → **Code Interpreter**
+   - Use default parameters
+
+---
+
+### Step 6: Connect Helper Agent to Stocks Agent
+
+1. Go back to your **Stocks Agent**
+2. Click **Add a Connect agent**
+3. **Select the agent:** `Get Today Date`
+4. **Unique name:** `GetTodayDate`
+5. **Steps to activate the agent:**
+   ```
+   Use this agent when you need to know the current today's date
+   ```
+6. Click **Add**
+
+---
+
+### Step 7: Test the Complete Solution
+
+Go back to the **Playground** and ask the same question again:
+
+```
+You: "What was the MSFT stock value in the last 2 weeks?"
+```
 
 ![Agent using the proper current date](images/screen012.jpg)
 
-You can even see how the actions selection process happened by clicking on "Threads logs":
+**Success!** The agent now correctly:
+1. ✅ Calls the "Get Today Date" agent to determine the current date
+2. ✅ Calculates the date range (last 2 weeks)
+3. ✅ Calls the Stock API with correct parameters
+4. ✅ Displays results in a formatted table
+
+---
+
+### Debugging Agent Execution
+
+Click **Threads logs** in the Playground to see the execution flow:
 
 ![Debugging the thread actions selection](images/screen011.jpg)
+
+This shows you:
+- Which agents were invoked
+- What tools were called
+- The order of execution
+- Parameters passed between agents
+
+---
+
+### Next Steps
+
+Now that you have a working Stock Agent, you can:
+- **Integrate with this solution** by updating `appsettings.json` with your agent details
+- **Test in Teams** using the local deployment guide
+- **Deploy to Azure** for production use
+- **Extend functionality** by adding more tools or connected agents
+
+**See:** [LOCAL_DEPLOYMENT.md](M365Agent/LOCAL_DEPLOYMENT.md) or [AZURE_DEPLOYMENT.md](M365Agent/AZURE_DEPLOYMENT.md)
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit issues or pull requests.
+
+---
+
+## 📄 License
+
+This project is licensed under the terms specified in the [LICENSE](LICENSE) file.
+
+---
+
+## 💬 Support
+
+For questions or issues:
+- **GitHub Issues:** [Create an issue](https://github.com/ericsche/ProxyAgent/issues)
+- **Microsoft Q&A:** [Teams Development](https://learn.microsoft.com/answers/topics/microsoft-teams.html)
+- **Teams Toolkit Issues:** [OfficeDev/TeamsFx](https://github.com/OfficeDev/TeamsFx/issues)
 
 
