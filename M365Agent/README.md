@@ -5,9 +5,9 @@ An intelligent agent that helps with Azure operations and tasks, built with Micr
 ## Quick Start
 
 ### Local Development (Debugging)
-1. Press **F5** in Visual Studio or VS Code to start debugging
-2. Test in **Microsoft 365 Agents Playground**
-3. Send messages to your bot and set breakpoints for debugging
+1. Press **F5** in VS Code to start debugging
+2. Agent is **automatically sideloaded in Teams/M365 Copilot**
+3. Test directly in Teams or Copilot with full debugging support
 
 **Full Setup Guide:** See [LOCAL_DEPLOYMENT.md](LOCAL_DEPLOYMENT.md)
 
@@ -104,8 +104,8 @@ New to Teams app development or Microsoft 365 Agents Toolkit? Explore Teams app 
 ## Support
 
 **Report an issue:**
-- Visual Studio: Help → Send Feedback → Report a Problem
 - GitHub: [Teams Toolkit Issues](https://github.com/OfficeDev/TeamsFx/issues)
+- VS Code: Help → Report Issue
 
 **Questions:**
 - Microsoft Q&A: [Teams Development](https://learn.microsoft.com/answers/topics/microsoft-teams.html)

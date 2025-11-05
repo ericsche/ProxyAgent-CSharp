@@ -22,9 +22,10 @@ Complete guide for setting up and debugging your M365 Agent in a local developme
 Local deployment is optimized for debugging and rapid development. Instead of deploying to Azure App Service, your bot runs on your local machine while still using Azure Bot Service for Teams connectivity.
 
 **Key Features:**
-- ✅ Run and debug locally in VS Code or Visual Studio
+- ✅ Run and debug locally in VS Code
 - ✅ Fast iteration (no deployment wait times)
 - ✅ Full debugging support with breakpoints
+- ✅ Automatic sideloading in Teams/M365 Copilot
 - ✅ Uses devtunnel for secure local endpoint exposure
 - ✅ Minimal Azure costs (only Bot Service required)
 - ✅ SSO with federated credentials (no client secrets for SSO)
@@ -40,7 +41,7 @@ Local deployment is optimized for debugging and rapid development. Instead of de
 
 | Feature | Production Deployment | Local Development |
 |---------|----------------------|-------------------|
-| **Bot Hosting** | Azure App Service | Local machine (VS Code/Visual Studio) |
+| **Bot Hosting** | Azure App Service | Local machine (VS Code) |
 | **Bot Identity** | User Assigned Managed Identity | App Registration with Client Secret |
 | **Bot Auth** | UserAssignedMSI | SingleTenant + Client Secret |
 | **Endpoint** | Static Azure URL | Dynamic devtunnel URL |
@@ -94,7 +95,7 @@ Local deployment is optimized for debugging and rapid development. Instead of de
             Local Development Machine
         ┌──────────────────────────────┐
         │  .NET 9 Bot Application      │
-        │  - VS Code / Visual Studio   │
+        │  - VS Code                   │
         │  - Debugger Attached         │
         │  - Port: 5000 or 7071        │
         │  - devtunnel running         │
@@ -290,10 +291,10 @@ Create or update `AzureAgentToM365ATK/appsettings.Development.json`:
 
 In VS Code:
 1. Press **F5** (or click **Debug** → **Start Debugging**)
-2. Select **Debug in Microsoft 365 Agents Playground (local)** if prompted
-3. Your bot should start on `http://localhost:5000`
-4. Microsoft 365 Agents Playground opens automatically
-5. Send a message to your bot!
+2. Your bot starts on `http://localhost:5000`
+3. The agent is **automatically sideloaded** in Teams/M365 Copilot
+4. Teams or Copilot opens automatically
+5. Start chatting with your agent directly in Teams/Copilot!
 
 **OR** via CLI:
 ```powershell
@@ -434,9 +435,9 @@ Federated Credentials: true
    dotnet run
    ```
 
-4. **Test in Teams**
-   - Open Microsoft 365 Agents Playground
-   - Send messages to your bot
+4. **Test in Teams/Copilot**
+   - Agent is automatically sideloaded in Teams/M365 Copilot
+   - Send messages to your agent
    - Set breakpoints in VS Code
    - Debug as needed
 
@@ -886,9 +887,10 @@ You're all set for local M365 Agent development! 🚀
 **Development Workflow:**
 1. Start dev tunnel
 2. Press F5 to run bot
-3. Test in Microsoft 365 Agents Playground
-4. Make changes → Save → Test
-5. Repeat!
+3. Agent automatically sideloads in Teams/M365 Copilot
+4. Test directly in Teams or Copilot
+5. Make changes → Save → Test
+6. Repeat!
 
 **Resources:**
 - [Microsoft 365 Agents Toolkit Documentation](https://aka.ms/teams-toolkit-docs)
