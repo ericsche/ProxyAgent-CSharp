@@ -56,14 +56,13 @@ Choose your deployment approach:
 ### Local Development (Debugging)
 Perfect for development and testing with breakpoints and hot reload.
 
+> **Note:** This solution currently supports **VS Code only**. Visual Studio support is not yet available.
+
 **See:** [M365Agent/LOCAL_DEPLOYMENT.md](M365Agent/LOCAL_DEPLOYMENT.md)
 
 ```powershell
-# Start dev tunnel
-devtunnel host
-
-# Press F5 in VS Code or Visual Studio
-# Test in Microsoft 365 Agents Playground
+# Press F5 in VS Code
+# Agent is automatically sideloaded in Teams/M365 Copilot for testing
 ```
 
 ### Azure Production Deployment
@@ -85,7 +84,9 @@ atk deploy --env dev        # Deploy your bot application
 - **.NET SDK 9.0** - [Download](https://dotnet.microsoft.com/download/dotnet/9.0)
 - **Azure CLI** - [Install Guide](https://learn.microsoft.com/cli/azure/install-azure-cli)
 - **Microsoft 365 Agents Toolkit CLI** - [Install Guide](https://aka.ms/m365agentstoolkit-cli)
-- **Visual Studio 2022** (17.14+) or **VS Code** with C# Dev Kit
+- **Visual Studio Code** with C# Dev Kit extension
+
+> **Important:** This solution currently supports **VS Code only**. Visual Studio support is planned for future releases.
 
 ### Required Services
 - **Azure AI Foundry Project** with a configured agent
@@ -244,20 +245,16 @@ The bot uses **Azure Managed Identity** (production) or **Single Tenant + Client
 
 ### Local Development Cycle
 
-1. **Start Dev Tunnel** (for Teams connectivity)
-   ```powershell
-   devtunnel host
-   ```
-
-2. **Run Bot Locally** (F5 in VS Code/Visual Studio)
+1. **Run Bot Locally** (Press F5 in VS Code)
+   - Agent is automatically sideloaded in Teams/M365 Copilot
    - Set breakpoints in your code
-   - Test in Microsoft 365 Agents Playground
+   - Test directly in Teams or Copilot
    - Iterate quickly without deployment
 
-3. **Test in Teams** (optional)
-   - Install app package in Teams
-   - Test end-to-end flow
-   - Debug with full context
+2. **Debug and Test**
+   - Full end-to-end testing in real Teams/Copilot environment
+   - Live debugging with breakpoints
+   - Hot reload for rapid development
 
 ### Deployment to Azure
 
@@ -303,9 +300,10 @@ The bot uses **Azure Managed Identity** (production) or **Single Tenant + Client
 - Easy environment replication
 
 ### ✅ Full Debugging Support
-- Set breakpoints in VS Code/Visual Studio
+- Set breakpoints in VS Code
 - Hot reload for rapid iteration
-- Local testing with real Teams integration
+- Automatic sideloading in Teams/M365 Copilot
+- Real-time testing in production environment
 
 ### ✅ Multi-Environment Support
 - Separate configurations for local, dev, staging, production
