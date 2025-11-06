@@ -219,6 +219,9 @@ appsettings.Development*
 appsettings.Production.json
 **/[Aa]ppManifest/*.zip
 .deployment
+.env
+.env.*
+.env.local
 
 # JetBrains Rider
 *.sln.iml

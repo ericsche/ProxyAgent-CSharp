@@ -27,20 +27,19 @@ param botServiceSku string = 'F0'
 param ssoAppId string = '00000000-0000-0000-0000-000000000000'
 
 // Variables
-var botServiceName = '${botName}-local'
-var ssoAppName = '${botName}-UserAuth-local'  // Different name to avoid duplicate
+var ssoAppName = '${botName}-UserAuth'  // Different name to avoid duplicate
 var nullGuid = '00000000-0000-0000-0000-000000000000'
 var isFirstTimeDeployment = ssoAppId == nullGuid
 
 // ========================================
-// STEP 0: Create Service Principal for Bot App
+// GUID ENCODING: Encode Tenant ID Once (First-time only)
 // ========================================
-// The Bot App is created by M365 Agents Toolkit with a client secret
-// We need to create its service principal for Bot Service authentication
-module botServicePrincipal 'modules/service-principal.bicep' = {
-  name: 'deploy-bot-service-principal-local'
+// Run GUID encoder once and reuse the encoded value for all OAuth connections
+module guidEncoder 'modules/guid-encoder.bicep' = if (isFirstTimeDeployment) {
+  name: 'encode-tenant-guid-local'
   params: {
-    appId: botId
+    guidToEncode: tenantId
+    location: location
   }
 }
 
@@ -55,7 +54,7 @@ module ssoAppRegistration 'modules/app-registration.bicep' = if (isFirstTimeDepl
     aadAppName: ssoAppName
     botId: botId
     tenantId: tenantId
-    location: location
+    encodedTenantId: guidEncoder!.outputs.encodedGuid
   }
 }
 
@@ -66,7 +65,7 @@ module ssoAppRegistration 'modules/app-registration.bicep' = if (isFirstTimeDepl
 resource botService 'Microsoft.BotService/botServices@2021-03-01' = {
   kind: 'azurebot'
   location: 'global'
-  name: botServiceName
+  name: botName
   properties: {
     displayName: botName
     endpoint: botEndpoint
@@ -77,9 +76,6 @@ resource botService 'Microsoft.BotService/botServices@2021-03-01' = {
   sku: {
     name: botServiceSku
   }
-  dependsOn: [
-    botServicePrincipal
-  ]
 }
 
 // Connect to Microsoft Teams
@@ -99,11 +95,11 @@ resource botServiceMsTeamsChannel 'Microsoft.BotService/botServices/channels@202
 module botOAuthConnection 'modules/bot-oauth-connection.bicep' = if (isFirstTimeDeployment) {
   name: 'deploy-bot-oauth-connection-sso-local'
   params: {
-    botServiceName: botServiceName
+    botServiceName: botName
     connectionName: 'SsoConnection'
     aadAppId: ssoAppRegistration!.outputs.aadAppId
     aadAppIdUri: ssoAppRegistration!.outputs.aadAppIdUri
-    federatedCredentialSubject: ssoAppRegistration!.outputs.fciName
+    federatedCredentialName: ssoAppRegistration!.outputs.fciName
     scopes: '${ssoAppRegistration!.outputs.aadAppIdUri}/access_as_user'
     tenantId: tenantId
     location: 'global'
@@ -119,7 +115,7 @@ module botOAuthConnection 'modules/bot-oauth-connection.bicep' = if (isFirstTime
 module botOAuthConnectionAIFoundry 'modules/bot-oauth-connection.bicep' = if (isFirstTimeDeployment) {
   name: 'deploy-bot-oauth-connection-aifoundry-local'
   params: {
-    botServiceName: botServiceName
+    botServiceName: botName
     connectionName: 'aifoundryaccess'
     aadAppId: ssoAppRegistration!.outputs.aadAppId
     aadAppIdUri: ssoAppRegistration!.outputs.aadAppIdUri
@@ -141,7 +137,6 @@ output botServiceId string = botService.id
 output botEndpoint string = botEndpoint
 output botId string = botId
 output tenantId string = tenantId
-output botServicePrincipalId string = botServicePrincipal.outputs.servicePrincipalId
 
 // SSO App outputs
 output ssoAppId string = isFirstTimeDeployment ? ssoAppRegistration!.outputs.aadAppId : ssoAppId

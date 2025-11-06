@@ -14,8 +14,8 @@ param aadAppId string
 @description('The Azure AD Application ID URI (e.g., api://botid-{guid})')
 param aadAppIdUri string
 
-@description('The federated credential subject (unique identifier from the federated credential)')
-param federatedCredentialSubject string
+@description('The federated credential name (unique identifier from the federated credential)')
+param federatedCredentialName string
 
 @description('OAuth scopes to request - should be the app ID URI with access_as_user scope')
 param scopes string
@@ -44,7 +44,7 @@ resource botOAuthConnection 'Microsoft.BotService/botServices/connections@2022-0
       }
       {
         key: 'UniqueIdentifier'
-        value: federatedCredentialSubject
+        value: federatedCredentialName
       }
       {
         key: 'TokenExchangeUrl'

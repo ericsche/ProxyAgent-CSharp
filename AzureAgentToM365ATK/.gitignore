@@ -3,7 +3,9 @@ build
 appPackage/build
 appsettings.Development.json
 .deployment
-appsettings.TestTool.json
+.env
+.env.*
+.env.local
 
 # User-specific files
 *.user

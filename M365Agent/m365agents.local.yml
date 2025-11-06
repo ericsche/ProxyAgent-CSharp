@@ -19,7 +19,7 @@ provision:
   - uses: aadApp/create
     with:
       # The Microsoft Entra application's display name
-      name: AzureAgentToM365ATK${{APP_NAME_SUFFIX}}
+      name: AzureAgentToM365ATK-Bot-${{APP_NAME_SUFFIX}}
       generateClientSecret: true
       signInAudience: AzureADMyOrg
     writeToEnvironmentFile:
@@ -43,7 +43,6 @@ provision:
       bicepCliVersion: v0.38.33
     # Note: arm/deploy outputs are automatically captured in ARM_OUTPUTS variable
     # We extract them and write to environment file in the next step
-  
 
 
   # Generate runtime appsettings to JSON file

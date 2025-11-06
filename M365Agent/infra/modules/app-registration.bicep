@@ -13,9 +13,8 @@ param botId string
 @description('Tenant ID where the application will be registered')
 param tenantId string
 
-
-@description('Location for resources')
-param location string = resourceGroup().location
+@description('Pre-encoded tenant ID in Base64URL format (from guid-encoder module)')
+param encodedTenantId string
 
 // Microsoft Entra ID Application Registration
 // Note: identifierUris cannot be set on initial creation with appId reference
@@ -148,21 +147,9 @@ resource aadApplication 'Microsoft.Graph/applications@v1.0' = {
   ]
 }
 
-// Call API to encode tenant ID (only if not pre-provided)
-module tenantIdEncoder 'guid-encoder.bicep' = {
-  name: 'encode-tenant-${uniqueString(tenantId)}'
-  params: {
-    guidToEncode: tenantId
-    location: location
-  }
-}
-
-// Use encoded values from API or parameters
-var calculatedEncodedTenantId = tenantIdEncoder!.outputs.encodedGuid
-
-// Construct federated credential subject
+// Construct federated credential subject using pre-encoded tenant ID
 // appId encode value is the Bot Service one. it is hardcoded on purpose.
-var myfciSubject ='/eid1/c/pub/t/${calculatedEncodedTenantId}/a/9ExAW52n_ky4ZiS_jhpJIQ/${guid(aadAppName, 'BotServiceOauthConnection')}'
+var myfciSubject ='/eid1/c/pub/t/${encodedTenantId}/a/9ExAW52n_ky4ZiS_jhpJIQ/${guid(aadAppName, 'BotServiceOauthConnection')}'
 
 // Federated Identity Credential for Bot Framework token exchange
 // This must be a separate resource as it's a child resource type
