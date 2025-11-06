@@ -1,16 +1,15 @@
-# Local Development Deployment Guide
+# Local Development & Debugging Guide
 
-Complete guide for setting up and debugging your M365 Agent in a local development environment.
+**Quick Start:** Press **F5** in VS Code to automatically provision, deploy, and debug your M365 Agent locally!
 
 ---
 
 ## Table of Contents
 - [Overview](#overview)
-- [Key Differences from Production](#key-differences-from-production)
-- [Architecture](#architecture)
 - [Prerequisites](#prerequisites)
-- [Quick Start](#quick-start)
-- [Detailed Setup](#detailed-setup)
+- [Getting Started](#getting-started)
+- [What Happens When You Press F5](#what-happens-when-you-press-f5)
+- [Behind the Scenes](#behind-the-scenes)
 - [Development Workflow](#development-workflow)
 - [Troubleshooting](#troubleshooting)
 - [Advanced Configuration](#advanced-configuration)
@@ -19,21 +18,30 @@ Complete guide for setting up and debugging your M365 Agent in a local developme
 
 ## Overview
 
-Local deployment is optimized for debugging and rapid development. Instead of deploying to Azure App Service, your bot runs on your local machine while still using Azure Bot Service for Teams connectivity.
+Local development is **fully automated** through Microsoft 365 Agents Toolkit. Simply press **F5** and everything is handled for you:
+
+**Automatic Process:**
+- ✅ Environment files created/updated automatically
+- ✅ Dev tunnel provisioned and started automatically
+- ✅ Azure resources provisioned automatically (first run only)
+- ✅ Bot application started with debugger attached
+- ✅ Teams/M365 Copilot opens with agent automatically sideloaded
+- ✅ Ready to debug with breakpoints immediately
 
 **Key Features:**
-- ✅ Run and debug locally in VS Code
-- ✅ Fast iteration (no deployment wait times)
-- ✅ Full debugging support with breakpoints
-- ✅ Automatic sideloading in Teams/M365 Copilot
-- ✅ Uses devtunnel for secure local endpoint exposure
-- ✅ Minimal Azure costs (only Bot Service required)
-- ✅ SSO with federated credentials (no client secrets for SSO)
+- 🚀 **One-Click Start:** Press F5 and you're debugging
+- ⚡ **Fast Iteration:** No manual deployment steps
+- 🐛 **Full Debugging:** Breakpoints, watches, call stacks
+- 🔄 **Auto-Sideload:** Agent appears directly in Teams/Copilot
+- 🌐 **Secure Tunnel:** Dev tunnel automatically managed
+- 💰 **Minimal Cost:** Only Bot Service (Free tier available)
 
-**Deployment Files:**
-- `infra/azure-local.bicep` - Local infrastructure template
-- `infra/azure-local.parameters.json` - Parameter configuration
-- `m365agents.local.yml` - Microsoft 365 Agents Toolkit orchestration for local
+**Configuration Files (Automated):**
+- `.vscode/tasks.json` - Task orchestration (pre-configured)
+- `m365agents.local.yml` - Microsoft 365 Agents Toolkit automation
+- `infra/azure-local.bicep` - Infrastructure template
+- `scripts/env.js` - Environment file management
+- `scripts/devtunnel.ps1` - Dev tunnel automation
 
 ---
 
@@ -97,8 +105,8 @@ Local deployment is optimized for debugging and rapid development. Instead of de
         │  .NET 9 Bot Application      │
         │  - VS Code                   │
         │  - Debugger Attached         │
-        │  - Port: 5000 or 7071        │
-        │  - devtunnel running         │
+        │  - Port: 5130                │
+        │  - Dev tunnel (automatic)    │
         └──────────────────────────────┘
 ```
 
@@ -108,38 +116,39 @@ Local deployment is optimized for debugging and rapid development. Instead of de
 
 ### Required Tools
 
-| Tool | Version | Installation |
-|------|---------|--------------|
-| **Azure CLI** | Latest | [Install Guide](https://learn.microsoft.com/cli/azure/install-azure-cli) |
-| **Microsoft 365 Agents Toolkit CLI** | Latest | [Install Guide](https://aka.ms/m365agentstoolkit-cli) |
-| **.NET SDK** | 9.0 | [Download](https://dotnet.microsoft.com/download/dotnet/9.0) |
-| **Visual Studio Code** | Latest | [Download](https://code.visualstudio.com/) |
-| **Dev Tunnels CLI** | Latest | [Install Guide](https://learn.microsoft.com/azure/developer/dev-tunnels/get-started) |
+All tools are automatically detected and validated when you press F5. Install these first:
 
-**Installation Commands:**
+| Tool | Version | Purpose | Installation |
+|------|---------|---------|--------------|
+| **Visual Studio Code** | Latest | IDE | [Download](https://code.visualstudio.com/) |
+| **.NET SDK** | 9.0+ | Bot runtime | [Download](https://dotnet.microsoft.com/download/dotnet/9.0) |
+| **Node.js** | 18.x+ | Toolkit scripts | [Download](https://nodejs.org/) |
+| **Azure CLI** | Latest | Azure authentication | `winget install Microsoft.AzureCLI` |
+| **Dev Tunnels CLI** | Latest | Local endpoint exposure | `winget install Microsoft.devtunnel` |
+
+**Quick Install (Windows):**
 ```powershell
-# Azure CLI
+# Install all at once
+winget install Microsoft.VisualStudioCode
+winget install Microsoft.DotNet.SDK.9
+winget install OpenJS.NodeJS.LTS
 winget install Microsoft.AzureCLI
-
-# Microsoft 365 Agents Toolkit CLI
-npm install -g @microsoft/m365agentstoolkit-cli
-
-# Dev Tunnels CLI
 winget install Microsoft.devtunnel
 
 # Verify installations
-az --version
-atk --version
 dotnet --version
+node --version
+az --version
 devtunnel --version
 ```
 
 ### Required VS Code Extensions
 
-Install these extensions in VS Code:
-- **Microsoft 365 Agents Toolkit** (`ms-teams-vscode.ms-teams-vscode-extension`)
-- **C# Dev Kit** (`ms-dotnettools.csdevkit`)
-- **Azure Account** (`ms-vscode.azure-account`)
+**Automatically recommended when you open the project!** Just click "Install All" when prompted.
+
+- **Microsoft 365 Agents Toolkit** - Handles all automation
+- **C# Dev Kit** - C# development and debugging
+- **Azure Account** - Azure authentication
 
 ### Required Azure Permissions
 
@@ -148,618 +157,823 @@ Install these extensions in VS Code:
 | **Contributor** | Subscription or Resource Group | Deploy Bot Service |
 | **Application Administrator** | Entra ID | Create app registrations |
 
----
+### Required Configuration
 
-## Quick Start
-
-### Step 1: Clone and Open Project
-
-```powershell
-# Navigate to project
-cd c:\Users\ericsche\source\repos\ericsche\ProxyAgent\M365Agent
-
-# Open in VS Code
-code .
-```
-
-### Step 2: Configure Environment Variables
-
-Edit `M365Agent/env/.env.local`:
+**Only 2 values needed** in `M365Agent/env/.env.local`:
 
 ```bash
-# ============================================================================
-# Azure Configuration (REQUIRED for ARM deployment)
-# ============================================================================
+# Your Azure subscription ID
 AZURE_SUBSCRIPTION_ID=<your-subscription-id>
+
+# Resource group name (can be new or existing)
 AZURE_RESOURCE_GROUP_NAME=rg-m365agent-local
-
-# ============================================================================
-# SSO App ID (Controls deployment mode)
-# ============================================================================
-# First time: Use null GUID
-# Updates: Use actual GUID from previous deployment
-SSO_APP_ID=00000000-0000-0000-0000-000000000000
-
-# ============================================================================
-# Bot Configuration (Auto-populated during provision)
-# ============================================================================
-BOT_ID=
-BOT_ENDPOINT=
-TEAMS_APP_TENANT_ID=
-
-# ============================================================================
-# Output Variables (Auto-populated by atk provision)
-# ============================================================================
-# These are set automatically - do not edit manually
 ```
 
-**Finding your subscription ID:**
+**Find your subscription ID:**
 ```powershell
 az login
 az account show --query id -o tsv
 ```
 
-### Step 3: Create Dev Tunnel
-
-```powershell
-# Create a persistent dev tunnel (first time only)
-devtunnel create --allow-anonymous
-
-# Example output:
-# Created tunnel: giant-fog-9lvr5gd
-
-# Start hosting the tunnel
-devtunnel port create -p 5000
-devtunnel host
-
-# Copy the HTTPS URL from output
-# Example: https://giant-fog-9lvr5gd-5000.euw.devtunnels.ms
-```
-
-**Keep this terminal open** - the tunnel needs to stay running while you develop.
-
-### Step 4: Provision Azure Resources
-
-In VS Code:
-1. Open the **Microsoft 365 Agents Toolkit** sidebar
-2. Click **Provision** in the **LIFECYCLE** section
-3. Select **local** environment
-4. Wait for provisioning to complete (~3-5 minutes)
-
-**OR** via CLI:
-```powershell
-cd M365Agent
-atk provision --env local
-```
-
-**What gets created:**
-1. ✅ Teams App registration
-2. ✅ Bot App Registration (Entra ID)
-3. ✅ Azure Bot Service
-4. ✅ SSO App Registration (Entra ID)
-5. ✅ OAuth Connection
-6. ✅ Teams app package
-
-**Expected output:**
-```
-✓ Teams app created
-✓ Bot App Registration created
-✓ Azure Bot Service created
-✓ SSO App Registration created
-✓ OAuth Connection configured
-✓ Environment variables updated in .env.local
-✓ Provision completed successfully
-```
-
-### Step 5: Create Client Secret
-
-After provisioning, you need to manually create a client secret for the bot:
-
-1. Go to [Azure Portal](https://portal.azure.com) → **Entra ID** → **App Registrations**
-2. Find your bot app (e.g., `AzureAgentToM365ATK-local`)
-3. Go to **Certificates & secrets**
-4. Click **New client secret**
-5. Description: `Local Development`
-6. Expires: **180 days** (or custom)
-7. Click **Add**
-8. **Copy the secret value immediately!** (You won't see it again)
-
-### Step 6: Configure Application Settings
-
-Create or update `AzureAgentToM365ATK/appsettings.Development.json`:
-
-```json
-{
-  "Logging": {
-    "LogLevel": {
-      "Default": "Information",
-      "Microsoft": "Warning",
-      "Microsoft.Hosting.Lifetime": "Information"
-    }
-  },
-  "MicrosoftAppType": "SingleTenant",
-  "MicrosoftAppId": "<BOT_ID from .env.local>",
-  "MicrosoftAppPassword": "<client secret from Step 5>",
-  "MicrosoftAppTenantId": "<TEAMS_APP_TENANT_ID from .env.local>",
-  "ConnectionName": "SsoConnection"
-}
-```
-
-**Important:** Never commit `appsettings.Development.json` with secrets to source control!
-
-### Step 7: Run and Debug
-
-In VS Code:
-1. Press **F5** (or click **Debug** → **Start Debugging**)
-2. Your bot starts on `http://localhost:5000`
-3. The agent is **automatically sideloaded** in Teams/M365 Copilot
-4. Teams or Copilot opens automatically
-5. Start chatting with your agent directly in Teams/Copilot!
-
-**OR** via CLI:
-```powershell
-# In one terminal - keep dev tunnel running
-devtunnel host
-
-# In another terminal - run the bot
-cd AzureAgentToM365ATK
-dotnet run
-```
+**Everything else is automated!** 🎉
 
 ---
 
-## Detailed Setup
+## Getting Started
 
-### Understanding Conditional Deployment
+### First Time Setup (2 Steps)
 
-The local deployment uses a conditional deployment strategy based on the `SSO_APP_ID` parameter:
+1. **Configure Azure credentials** in `.env.local`:
+   ```bash
+   AZURE_SUBSCRIPTION_ID=<your-guid>
+   AZURE_RESOURCE_GROUP_NAME=rg-m365agent-local
+   ```
 
-#### First-Time Deployment
-When `SSO_APP_ID = 00000000-0000-0000-0000-000000000000`:
-- ✅ Creates Bot Service
-- ✅ Creates SSO App Registration with Federated Credentials
-- ✅ Creates OAuth Connection
-- ✅ Saves SSO_APP_ID to `.env.local`
+2. **Press F5** in VS Code
 
-#### Update Deployment
-When `SSO_APP_ID` is a real GUID (from previous deployment):
-- ✅ Updates Bot Service endpoint only
-- ⏭️ Skips SSO App Registration (already exists)
-- ⏭️ Skips OAuth Connection (already exists)
+That's it! Everything else happens automatically.
+
+### What You'll See
+
+1. **Terminal opens** - Running automated tasks
+2. **Environment files created** - `.env.local` populated
+3. **Dev tunnel started** - Secure HTTPS endpoint created
+4. **Azure login prompt** - Authenticate once (if not already logged in)
+5. **Provisioning progress** - Creating Azure resources (first time only, ~2-3 minutes)
+6. **Bot starts** - .NET application running with debugger attached
+7. **Browser opens** - Teams/Copilot with your agent already sideloaded
+
+**You're now debugging!** Set breakpoints and start chatting with your agent.
+
+---
+
+## What Happens When You Press F5
+
+Microsoft 365 Agents Toolkit orchestrates the entire process automatically:
+
+### Step 1: Ensure Environment Files (Automatic)
+**Task:** `Ensure env files`  
+**Script:** `scripts/env.js`
+
+```
+✓ Checking M365Agent/env/.env.local
+✓ Adding missing variables with defaults
+✓ SSOAPPID set to 00000000-0000-0000-0000-000000000000
+✓ AZURE_AI_FOUNDRY_PROJECT_ENDPOINT added
+✓ AGENT_ID added
+```
+
+**What it does:**
+- Creates `.env.local` if it doesn't exist
+- Adds any missing required variables
+- Preserves existing values
+- Sets smart defaults (e.g., zero GUID for first-time SSOAPPID)
+
+### Step 2: Ensure Dev Tunnel (Automatic)
+**Task:** `Ensure DevTunnel`  
+**Script:** `scripts/devtunnel.ps1` (Windows) or `devtunnel.sh` (Mac/Linux)
+
+```
+✓ Checking for existing tunnel...
+✓ Creating new tunnel: gentle-rain-abc123
+✓ Starting tunnel on port 5130
+✓ Tunnel URL: https://gentle-rain-abc123-5130.euw.devtunnels.ms
+✓ Updating .env.local with tunnel info
+✓ BOT_ENDPOINT set to https://gentle-rain-abc123-5130.euw.devtunnels.ms/api/messages
+✓ BOT_DOMAIN set to gentle-rain-abc123-5130.euw.devtunnels.ms
+✓ TUNNEL_ID set to gentle-rain-abc123
+```
+
+**What it does:**
+- Checks if dev tunnel already exists (reads `TUNNEL_ID` from `.env.local`)
+- Creates new tunnel if needed (`devtunnel create`)
+- Starts tunnel on port 5130
+- Writes tunnel URL back to `.env.local`
+- Keeps tunnel running in background
+
+### Step 3: Validate Prerequisites (Automatic)
+**Task:** `Validate prerequisites`  
+**Type:** `teamsfx` (Microsoft 365 Agents Toolkit)
+
+```
+✓ Node.js version: 18.x or higher
+✓ M365 account: Signed in as user@contoso.com
+✓ Port 5130: Available
+```
+
+**What it checks:**
+- Node.js is installed and correct version
+- You're signed into a Microsoft 365 account
+- Required port (5130) is not in use
+
+### Step 4: Provision Azure Resources (Automatic - First Time Only)
+**Task:** `Provision`  
+**Type:** `teamsfx` (Executes `atk provision --env local`)  
+**Configuration:** `m365agents.local.yml`
+
+```
+✓ Creating Teams app registration...
+✓ Creating Bot App Registration (Entra ID)...
+  - Name: AzureAgentToM365ATKlocal
+  - Client Secret: Generated
+  - Single Tenant
+✓ Deploying Azure infrastructure (Bicep)...
+  - Creating Service Principal for Bot App
+  - Creating SSO App Registration (first time only)
+    - Name: AzureAgentToM365ATK-UserAuth-local
+    - Federated Credentials configured
+    - OAuth scopes: access_as_user
+  - Creating Azure Bot Service
+    - SKU: F0 (Free)
+    - Endpoint: Your dev tunnel URL
+  - Creating OAuth Connection
+    - Name: SsoConnection
+    - Provider: Azure AD v2
+    - Federated credentials enabled
+✓ Writing outputs to .env.local...
+  - SSOAPPID updated with actual GUID
+  - OAUTHCONNECTIONNAME set to SsoConnection
+✓ Generating appsettings.Development.json...
+```
+
+**What it creates (first time):**
+1. **Teams App** - Registered in your M365 tenant
+2. **Bot App Registration** - Entra ID app with client secret
+3. **SSO App Registration** - Entra ID app with federated credentials
+4. **Azure Bot Service** - F0 (Free) tier
+5. **OAuth Connection** - Connects bot to SSO app
+6. **Environment variables** - All IDs and endpoints saved
+
+**Subsequent runs:**
+- Skips SSO app creation (already exists)
+- Updates bot endpoint only (if tunnel URL changed)
+- Takes ~30 seconds instead of 2-3 minutes
+
+### Step 5: Deploy (Automatic)
+**Task:** `Deploy`  
+**Type:** `teamsfx` (Executes `atk deploy --env local`)
+
+```
+✓ Building Teams app package...
+✓ Updating app manifest with current values...
+✓ Packaging app for sideloading...
+```
+
+**What it does:**
+- Builds the Teams app package (`.zip`)
+- Updates manifest with current BOT_ID, SSOAPPID, etc.
+- Prepares for automatic sideloading
+
+### Step 6: Start Application (Automatic)
+**Task:** `Start application`  
+**Command:** `dotnet run --project AzureAgentToM365ATK.csproj --configuration Debug`
+
+```
+✓ Building C# project...
+✓ Starting bot application on http://localhost:5130
+✓ Bot endpoint: /api/messages
+✓ Health check: /health
+✓ Debugger attached
+✓ Ready to receive messages!
+```
+
+**What it does:**
+- Compiles your C# bot code
+- Starts the bot on port 5130
+- Attaches VS Code debugger
+- Bot listens for messages from Teams/Copilot via dev tunnel
+
+### Step 7: Launch Browser (Automatic)
+**Launch Configuration:** `.vscode/launch.json`
+
+```
+✓ Opening Microsoft Edge...
+✓ Navigating to Teams/Copilot...
+✓ Automatically sideloading agent...
+✓ Agent ready to chat!
+```
+
+**What it does:**
+- Opens your default browser (or specified browser)
+- Navigates directly to Teams or M365 Copilot
+- Automatically sideloads your agent (no manual installation!)
+- Agent appears in chat immediately
+
+---
+
+## Behind the Scenes
+
+### Two-App Security Architecture
+
+The automated deployment creates **two separate app registrations** for security best practices:
+
+#### App 1: Bot App Registration
+**Created by:** Microsoft 365 Agents Toolkit  
+**Name:** `AzureAgentToM365ATKlocal`  
+**Purpose:** Bot Service authentication  
+**Authentication:** Client ID + Client Secret
+
+**Used for:**
+- Bot Framework authentication
+- Bot Service communication
+- Local development identity (replaces Managed Identity)
+
+**Configuration:**
+```yaml
+Sign-in Audience: AzureADMyOrg (Single tenant)
+Client Secret: Generated during provision
+Required for: Bot Service to verify bot identity
+```
+
+#### App 2: SSO App Registration
+**Created by:** Bicep template (automatic)  
+**Name:** `AzureAgentToM365ATK-UserAuth-local`  
+**Purpose:** User authentication and SSO  
+**Authentication:** Federated Credentials (no secrets!)
+
+**Used for:**
+- Single Sign-On (SSO) with users
+- Token exchange for user authentication
+- Accessing user resources on behalf of user
+
+**Configuration:**
+```yaml
+OAuth Scope: access_as_user
+Federated Credentials: Bot Framework token issuer
+Pre-authorized Clients: Teams, Outlook, M365 apps
+No client secrets: More secure than password-based auth
+```
+
+**Why Two Apps?**
+- **Security separation:** Bot auth ≠ User auth
+- **Different lifecycles:** Bot secret rotation vs federated creds
+- **Best practice:** Principle of least privilege
+
+### Conditional Deployment Intelligence
+
+The Bicep template automatically detects first-time vs. update scenarios:
+
+#### First Run: Full Provisioning
+**When:** `SSOAPPID = 00000000-0000-0000-0000-000000000000` in `.env.local`
+
+```
+⏱️ Duration: 2-3 minutes
+
+✓ Create Service Principal for Bot App
+✓ Create SSO App Registration
+  - Configure OAuth scopes
+  - Add federated credentials
+  - Pre-authorize Teams clients
+✓ Create Azure Bot Service
+  - Configure bot endpoint (dev tunnel URL)
+  - Enable Teams channel
+✓ Create OAuth Connection
+  - Link bot to SSO app
+  - Configure token exchange
+✓ Write SSOAPPID back to .env.local
+```
+
+**After first run, `.env.local` contains the real SSO App GUID.**
+
+#### Subsequent Runs: Update Only
+**When:** `SSOAPPID` contains a real GUID (from previous run)
+
+```
+⏱️ Duration: 30 seconds
+
+✓ Update Bot Service endpoint only
+  - New dev tunnel URL (if changed)
+⏭️ Skip SSO App Registration (already exists)
+⏭️ Skip OAuth Connection (already exists)
+```
 
 **Why this matters:**
-- First provision: Takes 3-5 minutes, creates all resources
-- Updates: Takes ~1 minute, only updates bot endpoint
-- You can change your devtunnel URL without recreating SSO resources
+- **Fast iterations:** Change tunnel URL without recreating SSO app
+- **Preserve credentials:** SSO app and federated credentials stay intact
+- **Consistent IDs:** Same SSO App GUID across debug sessions
 
-### Bot App Registration Details
+### Infrastructure Modules
 
-**Module:** `modules/bot-app-registration.bicep`
+All automated through Bicep templates:
 
-**Purpose:** Creates the Entra ID application that serves as the bot's identity (replaces managed identity for local dev).
+**`infra/azure-local.bicep`** - Main orchestrator
+- Detects first-time vs. update based on SSOAPPID
+- Coordinates all module deployments
+- Outputs values back to `.env.local`
 
-**Configuration:**
-```bicep
-Sign-in Audience: AzureADMyOrg (Single tenant)
-Authentication: Client ID + Client Secret
-```
+**`infra/modules/service-principal.bicep`**
+- Creates service principal for Bot App
+- Required for bot to authenticate with Bot Service
 
-**Why Client Secret?**
-- Managed Identity requires Azure App Service
-- Local development needs a different auth mechanism
-- Client Secret is suitable for dev (not recommended for production)
+**`infra/modules/app-registration.bicep`**
+- Creates SSO App Registration
+- Configures federated credentials
+- Sets up OAuth scopes and pre-authorized clients
 
-**Outputs:**
-- `botAppId`: Use as `BOT_ID` and `MicrosoftAppId`
-- `botAppObjectId`: Object ID of the application
-
-### Bot Service Configuration
-
-**Module:** `modules/azurebot.bicep`
-
-**Purpose:** Registers your local service as a bot with Bot Framework.
-
-**Key Settings:**
-```bicep
-Kind: azurebot
-Location: global
-SKU: F0 (Free tier)
-MSA App Type: SingleTenant
-Endpoint: Dynamic (your devtunnel URL)
-```
-
-**Endpoint Updates:**
-Every time you run `atk provision --env local`, the bot endpoint is updated to your current devtunnel URL. This allows you to:
-- Restart your tunnel with a new URL
-- Switch between different tunnel configurations
-- Update without recreating other resources
-
-### SSO App Registration
-
-**Module:** `modules/app-registration.bicep`
-
-**Purpose:** Enables Single Sign-On for user authentication.
-
-**Configuration:**
-```bicep
-OAuth Scope: access_as_user
-Federated Credentials: Yes (Bot Framework issuer)
-Pre-authorized Clients: Teams clients
-```
-
-**Federated Credentials Subject:**
-```
-/eid1/c/pub/t/{encodedTenantId}/a/{encodedAppId}/{uniqueId}
-```
-
-The GUID encoder module handles the encoding automatically.
-
-### OAuth Connection
-
-**Module:** `modules/bot-oauth-connection.bicep`
-
-**Purpose:** Connects the bot to the SSO app for token exchange.
-
-**Configuration:**
-```bicep
-Service Provider: Azure Active Directory v2
-Client ID: SSO App ID
-Scopes: openid profile offline_access
-Federated Credentials: true
-```
+**`infra/modules/bot-oauth-connection.bicep`**
+- Creates OAuth connection in Bot Service
+- Links bot to SSO app for token exchange
+- Enables SSO flow
 
 ---
 
 ## Development Workflow
 
-### Daily Development Cycle
+### Daily Development (Fully Automated)
 
-1. **Start Dev Tunnel**
-   ```powershell
-   devtunnel host
-   ```
+**Every debug session:**
+1. Press **F5** in VS Code
+2. Everything happens automatically (see [What Happens When You Press F5](#what-happens-when-you-press-f5))
+3. Browser opens with agent ready to chat
+4. Start debugging!
 
-2. **If tunnel URL changed, update Bot Service**
-   ```powershell
-   # If needed (tunnel URL changed)
-   atk provision --env local
-   ```
+That's the entire workflow! 🎉
 
-3. **Run Bot**
-   ```powershell
-   # In VS Code
-   Press F5
-   
-   # OR via CLI
-   cd AzureAgentToM365ATK
-   dotnet run
-   ```
+### Making Code Changes
 
-4. **Test in Teams/Copilot**
-   - Agent is automatically sideloaded in Teams/M365 Copilot
-   - Send messages to your agent
-   - Set breakpoints in VS Code
-   - Debug as needed
+**Iterative development:**
+1. **Make changes** to your C# code
+2. **Save files** (Ctrl+S)
+3. **Stop debugging** (Shift+F5) or use hot reload
+4. **Press F5** again
+5. **Test immediately** in Teams/Copilot
 
-5. **Make Changes**
-   - Edit code
-   - Save files
-   - Hot reload kicks in (or restart debugger)
-   - Test immediately
+**Hot reload (optional):**
+- Edit code while debugging
+- Save file
+- Changes apply automatically (if supported by .NET hot reload)
+- No need to restart debugger
 
-### Testing SSO Flow
+### Testing Different Scenarios
 
-1. **Trigger Authentication**
-   ```csharp
-   // In your bot code
-   var tokenResponse = await turnContext.Adapter.GetUserTokenAsync(
-       turnContext,
-       "SsoConnection", // Must match OAuth connection name
-       null,
-       cancellationToken);
-   ```
+**Set breakpoints anywhere:**
+```csharp
+protected override async Task OnMessageActivityAsync(...)
+{
+    // Set breakpoint here
+    var text = turnContext.Activity.Text;
+    
+    // Execution pauses when user sends message
+    // Inspect variables, step through code
+}
+```
 
-2. **Expected Flow**
-   - User sends message requiring auth
-   - Bot sends OAuth card
-   - User clicks "Sign In"
-   - SSO kicks in (no additional prompts if configured correctly)
-   - Bot receives token
+**Debug flow:**
+1. Set breakpoints in VS Code
+2. Send message from Teams/Copilot
+3. VS Code pauses at breakpoint
+4. Inspect variables, call stack, watches
+5. Continue execution (F5) or step through (F10/F11)
 
-3. **Debugging SSO Issues**
-   - Check `ConnectionName` in `appsettings.Development.json`
-   - Verify `webApplicationInfo` in manifest
-   - Check federated credentials in Azure Portal
-   - Review pre-authorized clients
+### Testing SSO Flow (Automatic)
 
-### Working with Multiple Developers
+SSO is **automatically configured** during F5 provisioning. Test it by triggering authentication in your bot:
 
-Each developer should:
-1. Create their own dev tunnel
-2. Have their own `.env.local` with their tunnel URL
-3. Run `atk provision --env local` to register their endpoint
-4. Use their own client secret
+```csharp
+// Your bot code - request user token
+var tokenResponse = await turnContext.Adapter.GetUserTokenAsync(
+    turnContext,
+    "SsoConnection", // Automatically configured
+    null,
+    cancellationToken);
 
-**Shared Resources:**
-- Azure Bot Service (shared registration, multiple endpoints)
-- SSO App Registration (shared, single instance)
-- Teams App (shared, single registration)
+if (tokenResponse != null)
+{
+    // User authenticated! Token available
+    var accessToken = tokenResponse.Token;
+}
+else
+{
+    // Send OAuth card (automatic)
+    // User will see "Sign in" button
+}
+```
+
+**Expected flow (automatic):**
+1. User sends message requiring auth
+2. Bot requests token via OAuth connection
+3. If not authenticated: OAuth card appears
+4. User clicks "Sign In"
+5. SSO happens silently (federated credentials!)
+6. Bot receives token
+
+**Everything is pre-configured:**
+- ✅ OAuth connection name: `SsoConnection`
+- ✅ Federated credentials: Configured in SSO app
+- ✅ Pre-authorized clients: Teams/Outlook/M365
+- ✅ Manifest `webApplicationInfo`: Automatically updated
+
+### Multi-Developer Setup (Still Automated!)
+
+**Each developer:**
+1. Clones the repo
+2. Creates their own `.env.local` with their Azure subscription
+3. Presses F5
+
+**What happens:**
+- Each developer gets their own dev tunnel
+- Each developer's bot endpoint is registered in Bot Service
+- SSO app and OAuth connection are **shared** (created once by first developer)
+- No conflicts!
+
+**Shared resources:**
+- ✅ Azure Bot Service registration
+- ✅ SSO App Registration
+- ✅ Teams App registration
+
+**Per-developer:**
+- ✅ Dev tunnel URL (unique)
+- ✅ Bot endpoint (points to their tunnel)
+- ✅ Local debugger session
 
 ---
 
 ## Troubleshooting
 
-### Bot Not Responding
+Most issues are **automatically resolved** when you press F5 again. If you encounter problems:
 
-**Check 1: Dev Tunnel Running**
-```powershell
-# Verify tunnel is active
-devtunnel show
-```
+### F5 Doesn't Start
 
-**Check 2: Bot Application Running**
-```powershell
-# Check if bot is listening
-curl http://localhost:5000/health
-```
+**Solution:** Check the **Terminal** panel in VS Code for error messages.
 
-**Check 3: Bot Endpoint Configured**
-```powershell
-# Verify bot endpoint in Azure
-az bot show --name <bot-name> --resource-group <rg-name> --query properties.endpoint
-```
+**Common issues:**
 
-**Check 4: Application Logs**
-Look at the console output where you ran `dotnet run` or the Debug Console in VS Code.
-
----
-
-### "401 Unauthorized" from Bot Service
-
-**Cause:** Bot authentication is not configured correctly.
-
-**Solution:**
-1. Verify `appsettings.Development.json`:
-   ```json
-   {
-     "MicrosoftAppType": "SingleTenant",
-     "MicrosoftAppId": "<matches BOT_ID>",
-     "MicrosoftAppPassword": "<valid client secret>",
-     "MicrosoftAppTenantId": "<matches TEAMS_APP_TENANT_ID>"
-   }
+1. **"Node.js not found"**
+   ```powershell
+   # Install Node.js
+   winget install OpenJS.NodeJS.LTS
    ```
 
-2. Verify client secret hasn't expired:
-   - Go to Azure Portal → App Registrations
-   - Find bot app → Certificates & secrets
-   - Check expiration date
-   - Create new secret if expired
+2. **".NET SDK not found"**
+   ```powershell
+   # Install .NET 9
+   winget install Microsoft.DotNet.SDK.9
+   ```
 
-3. Restart your bot application
+3. **"devtunnel not found"**
+   ```powershell
+   # Install Dev Tunnels CLI
+   winget install Microsoft.devtunnel
+   ```
+
+4. **"Port 5130 already in use"**
+   ```powershell
+   # Find and kill the process
+   netstat -ano | findstr :5130
+   taskkill /PID <process-id> /F
+   ```
+
+Then press **F5** again - everything will retry automatically.
 
 ---
 
-### SSO Not Working
+### Bot Not Responding in Teams/Copilot
 
-**Check 1: Manifest Configuration**
-Verify `appPackage/build/manifest.local.json`:
-```json
-{
-  "webApplicationInfo": {
-    "id": "<matches SSO_APP_ID>",
-    "resource": "<matches SSO_APP_ID_URI>"
-  }
-}
+**Automatic checks performed:**
+- ✅ Dev tunnel is running (automatic)
+- ✅ Bot application is running (automatic)
+- ✅ Bot endpoint is configured (automatic)
+
+**If still not working:**
+
+1. **Stop debugging** (Shift+F5)
+2. **Press F5 again** - full re-provisioning happens
+3. **Check terminal output** for any errors
+
+**Manual verification (advanced):**
+```powershell
+# Check if bot is accessible via tunnel
+curl <BOT_ENDPOINT_from_.env.local>
+
+# Should return bot framework response
 ```
 
-**Check 2: OAuth Connection**
+---
+
+### Provisioning Errors
+
+**Error: "Insufficient permissions"**
+
+**Cause:** Missing Azure permissions
+
+**Solution:**
+- Need **Contributor** role on subscription/resource group
+- Need **Application Administrator** role in Entra ID
+- Contact your Azure/M365 admin
+
+**Error: "SSOAPPID is invalid"**
+
+**Cause:** `.env.local` has incorrect SSOAPPID value
+
+**Solution:**
+1. Open `M365Agent/env/.env.local`
+2. Set `SSOAPPID=00000000-0000-0000-0000-000000000000`
+3. Press F5 again
+
+**Error: "Resource group not found"**
+
+**Solution:**
+1. Open `.env.local`
+2. Update `AZURE_RESOURCE_GROUP_NAME` to existing RG or new name
+3. If new name, resource group will be created automatically
+4. Press F5 again
+
+---
+
+### SSO Not Working (Automatic Configuration)
+
+SSO is automatically configured. If it's not working:
+
+**Quick fix:**
+1. Stop debugging (Shift+F5)
+2. Delete `M365Agent/env/.env.local`
+3. Press F5 (full re-provisioning)
+
+**Manual verification (advanced):**
+
+Check automatic configuration:
 ```powershell
+# Check OAuth connection
 az bot authsetting show `
-  --name <bot-name> `
-  --resource-group <rg-name> `
+  --name AzureAgentToM365ATK `
+  --resource-group <your-rg-name> `
   --setting-name SsoConnection
 ```
 
-**Check 3: Federated Credentials**
-1. Go to Azure Portal → Entra ID → App Registrations
-2. Find SSO app
-3. Go to **Certificates & secrets** → **Federated credentials**
-4. Should see credential with:
-   - Issuer: `https://token.botframework.com/`
-   - Subject: `/eid1/c/pub/t/...`
+Check app manifest (automatic):
+```powershell
+# Open generated manifest
+code M365Agent/appPackage/build/manifest.local.json
 
-**Check 4: Pre-authorized Clients**
-1. In SSO App Registration → **Expose an API**
-2. Check **Authorized client applications**
-3. Should include Teams client IDs:
-   - `1fec8e78-bce4-4aaf-ab1b-5451cc387264` (Teams mobile/desktop)
-   - `5e3ce6c0-2b1f-4285-8d4b-75ee78787346` (Teams web)
+# Verify webApplicationInfo section exists:
+# {
+#   "webApplicationInfo": {
+#     "id": "<SSOAPPID>",
+#     "resource": "api://<SSO_APP_ID_URI>"
+#   }
+# }
+```
 
 ---
 
-### Dev Tunnel Issues
+### Dev Tunnel Disconnects
 
-**Problem: Tunnel disconnects frequently**
+**Dev tunnel is fully automated** - Microsoft 365 Agents Toolkit handles everything!
 
-**Solution:**
-- Use persistent tunnel: `devtunnel create --allow-anonymous`
-- Keep terminal window open
-- Consider using `devtunnel host --background`
+**Automatic handling:**
+- ✅ Script detects existing tunnel from `.env.local`
+- ✅ Reuses tunnel ID across debug sessions
+- ✅ Recreates tunnel if it doesn't exist
+- ✅ Updates bot endpoint automatically
 
-**Problem: "Tunnel not found"**
+**If tunnel keeps disconnecting:**
+1. Stop debugging (Shift+F5)
+2. Close all VS Code terminals
+3. Press F5 (fresh start with automatic tunnel recreation)
+
+**Troubleshooting only (rarely needed):**
+```powershell
+# View all your tunnels
+devtunnel list
+
+# Delete specific tunnel manually (if corrupted)
+devtunnel delete <tunnel-id>
+
+# Force fresh tunnel creation by deleting tunnel ID
+Remove-Item M365Agent/env/.env.local
+# Then press F5 - new tunnel created automatically
+```
+
+**Note:** You should never need to run `devtunnel` commands manually. The automation handles everything!
+
+---
+
+### "Cannot find module" Errors
+
+**Error:** `Cannot find module '@microsoft/m365agentstoolkit-cli'`
 
 **Solution:**
 ```powershell
-# List your tunnels
-devtunnel list
+# Install Microsoft 365 Agents Toolkit CLI globally
+npm install -g @microsoft/m365agentstoolkit-cli
 
-# Delete and recreate
-devtunnel delete <tunnel-id>
-devtunnel create --allow-anonymous
+# Verify
+atk --version
 ```
+
+Then press F5 again.
 
 ---
 
-### Provision Failed: "SSO_APP_ID is invalid"
+### First Time Takes Long Time
 
-**Cause:** The SSO_APP_ID in `.env.local` is not a valid GUID.
+**Expected:** First F5 press takes 2-3 minutes (creating Azure resources)
 
-**Solution:**
-For first-time provisioning, use the null GUID:
-```bash
-SSO_APP_ID=00000000-0000-0000-0000-000000000000
+**Subsequent runs:** 10-30 seconds (only updating endpoint)
+
+**What's happening:**
+```
+First run:
+ ⏱️ ~3 minutes
+ - Creating Teams app
+ - Creating Bot App Registration
+ - Deploying Bicep template (SSO app, Bot Service, OAuth)
+ - Generating manifests
+ - Starting bot
+
+Subsequent runs:
+ ⏱️ ~30 seconds
+ - Updating bot endpoint (if tunnel changed)
+ - Starting bot
 ```
 
-For updates, use the actual GUID from the previous deployment:
-```bash
-SSO_APP_ID=a1b2c3d4-e5f6-7890-abcd-ef1234567890
-```
-
----
-
-### Cannot Create Client Secret
-
-**Problem:** No "Certificates & secrets" menu option.
-
-**Cause:** Insufficient permissions in Entra ID.
-
-**Solution:**
-- Contact your Azure AD administrator
-- Need **Application Administrator** role
-- Or have admin create the secret for you
-
----
-
-### Hot Reload Not Working
-
-**Solution:**
-1. Make sure you're using .NET 9.0
-2. Run with `dotnet watch run` instead of `dotnet run`
-3. Or use VS Code debugger with hot reload enabled
+**To speed up subsequent runs:**
+- Keep the same dev tunnel (don't delete TUNNEL_ID from .env.local)
+- Don't delete .env.local between sessions
 
 ---
 
 ## Advanced Configuration
 
-### Using a Custom Port
+### Port Configuration
 
-If port 5000 is already in use:
+The bot application runs on **port 5130** by default.
 
-1. **Update launchSettings.json**
+**Port 5130 is configured in:**
+- `AzureAgentToM365ATK/Properties/launchSettings.json` - Bot application URL
+- `.vscode/tasks.json` - Port availability check
+- `scripts/devtunnel.ps1` - Dev tunnel port mapping
+
+**Dev tunnel is fully automated** by Microsoft 365 Agents Toolkit:
+- ✅ Automatically created when you press F5
+- ✅ Automatically maps to port 5130
+- ✅ Automatically updates bot endpoint in Azure
+- ✅ Automatically persists tunnel ID in `.env.local`
+- ✅ No manual dev tunnel commands needed!
+
+**To use a different port:**
+
+1. **Update launch settings:** `AzureAgentToM365ATK/Properties/launchSettings.json`
    ```json
    {
-     "profiles": {
-       "AzureAgentToM365ATK": {
-         "applicationUrl": "http://localhost:7071"
-       }
+     "applicationUrl": "http://localhost:7071"
+   }
+   ```
+
+2. **Update devtunnel script:** `scripts/devtunnel.ps1`
+   ```powershell
+   $port = 7071  # Change to your preferred port
+   ```
+
+3. **Update tasks.json:** `.vscode/tasks.json`
+   ```json
+   {
+     "label": "Validate prerequisites",
+     "args": {
+       "portOccupancy": [7071]  // Change port
      }
    }
    ```
 
-2. **Update Dev Tunnel**
-   ```powershell
-   devtunnel port create -p 7071
-   devtunnel host
+4. **Press F5** - Dev tunnel automatically recreates with new port!
+
+### Debugging Techniques
+
+#### Conditional Breakpoints
+Set breakpoints that only trigger for specific conditions:
+
+1. Set a breakpoint
+2. Right-click → **Edit Breakpoint**
+3. Add condition:
+   ```csharp
+   turnContext.Activity.Text.Contains("hello")
    ```
 
-3. **Re-provision**
-   ```powershell
-   atk provision --env local
+Now breakpoint only triggers when user sends "hello"!
+
+#### Logpoints
+Log messages without stopping execution:
+
+1. Right-click in gutter → **Add Logpoint**
+2. Enter message:
+   ```
+   User said: {turnContext.Activity.Text}
    ```
 
-### Multiple Local Environments
+Logs appear in Debug Console without pausing.
 
-Create separate local environments for different scenarios:
+#### Watch Expressions
+Monitor values continuously:
 
-```bash
-# .env.local - Default
-SSO_APP_ID=00000000-0000-0000-0000-000000000000
+1. In Debug sidebar → **Watch** section
+2. Click **+** and add expression:
+   ```csharp
+   turnContext.Activity.From.Name
+   ```
 
-# .env.local.test - Testing with test tenant
-SSO_APP_ID=00000000-0000-0000-0000-000000000000
+See live value updates while debugging!
 
-# .env.local.staging - Staging-like local env
-SSO_APP_ID=00000000-0000-0000-0000-000000000000
+#### Debug Console Evaluation
+While paused at breakpoint:
+
+```csharp
+// In Debug Console, type:
+turnContext.Activity.Text
+turnContext.Activity.From.Id
+turnContext.Activity.Conversation.Id
 ```
 
-Provision each:
-```powershell
-atk provision --env local
-atk provision --env local.test
-atk provision --env local.staging
-```
+Instant feedback without adding code!
 
-### Using ngrok Instead of devtunnel
+### Environment-Specific Settings
 
-If you prefer ngrok:
+**Automatic environment detection:**
 
-1. **Install ngrok**
-   ```powershell
-   winget install ngrok
-   ```
+```csharp
+// In Program.cs (automatically configured)
+var environment = builder.Environment;
 
-2. **Start ngrok**
-   ```powershell
-   ngrok http 5000
-   ```
-
-3. **Use ngrok URL**
-   Copy the HTTPS URL (e.g., `https://abc123.ngrok.io`)
-
-4. **Update .env.local**
-   ```bash
-   BOT_ENDPOINT=https://abc123.ngrok.io/api/messages
-   ```
-
-5. **Provision**
-   ```powershell
-   atk provision --env local
-   ```
-
-### Debugging with Multiple Breakpoints
-
-**VS Code Tips:**
-
-1. **Conditional Breakpoints**
-   - Right-click breakpoint → Edit Breakpoint
-   - Add condition: `message.Text.Contains("hello")`
-
-2. **Logpoints**
-   - Right-click in gutter → Add Logpoint
-   - Log message without stopping: `Message: {message.Text}`
-
-3. **Debug Console**
-   - Evaluate expressions while debugging
-   - Example: `turnContext.Activity.Text`
-
-### Environment-Specific Configuration
-
-Use different `appsettings.*.json` files:
-
-```
-appsettings.json                    # Base configuration
-appsettings.Development.json        # Local dev (with secrets)
-appsettings.Staging.json           # Staging environment
-appsettings.Production.json        # Production (no secrets!)
-```
-
-Set environment in `launchSettings.json`:
-```json
+if (environment.IsDevelopment())
 {
-  "profiles": {
-    "Development": {
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      }
-    },
-    "Staging": {
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Staging"
-      }
-    }
-  }
+    // Development-specific configuration
+    app.UseDeveloperExceptionPage();
 }
 ```
+
+**Multiple appsettings files (automatic):**
+
+```
+appsettings.json                    # Base (committed)
+appsettings.Development.json        # Local dev (in .gitignore!)
+appsettings.Production.json         # Production (no secrets!)
+```
+
+.NET automatically loads the right file based on `ASPNETCORE_ENVIRONMENT`.
+
+### Changing Browser
+
+**Default:** Microsoft Edge
+
+**To use Chrome:**
+
+Edit `.vscode/launch.json`:
+```json
+{
+  "name": "Launch in Teams (Chrome)",
+  "type": "chrome",  // Change from "msedge"
+  // ... rest of config
+}
+```
+
+Press F5 and select the Chrome configuration.
+
+### Azure AI Foundry Integration
+
+**Add your Azure AI Foundry project:**
+
+1. After first F5 run, open `M365Agent/env/.env.local`
+2. Update these values:
+   ```bash
+   AZURE_AI_FOUNDRY_PROJECT_ENDPOINT=https://your-project.azure.ai
+   AGENT_ID=your-agent-id
+   ```
+
+3. Press F5 again
+
+Values automatically flow to your bot application!
+
+### Multiple Developer Environments
+
+**Developer 1:**
+```bash
+# .env.local
+AZURE_RESOURCE_GROUP_NAME=rg-m365agent-dev1
+```
+
+**Developer 2:**
+```bash
+# .env.local  
+AZURE_RESOURCE_GROUP_NAME=rg-m365agent-dev2
+```
+
+Each developer gets isolated resources, but can share the same codebase.
+
+### Custom Task Execution
+
+**Run individual tasks:**
+
+1. Press **Ctrl+Shift+P**
+2. Type **Tasks: Run Task**
+3. Select task:
+   - `Ensure env files` - Just create/update env files
+   - `Ensure DevTunnel` - Just start dev tunnel
+   - `Provision` - Just provision Azure resources
+   - `Deploy` - Just build app package
+   - `Start application` - Just run bot (no provisioning)
+
+**Stop everything:**
+- Select task: `Stop All Services`
+- Kills all running processes (dotnet, devtunnel, node)
 
 ---
 
@@ -875,29 +1089,105 @@ When ready to move from local development to production:
 
 ## Summary
 
-You're all set for local M365 Agent development! 🚀
+Local development is **completely automated!** 🚀
 
-**Quick Recap:**
-1. ✅ Create dev tunnel
-2. ✅ Provision Azure resources (`atk provision --env local`)
-3. ✅ Create client secret in Azure Portal
-4. ✅ Configure `appsettings.Development.json`
-5. ✅ Press F5 and start debugging!
+### Quick Start Checklist
 
-**Development Workflow:**
-1. Start dev tunnel
-2. Press F5 to run bot
-3. Agent automatically sideloads in Teams/M365 Copilot
-4. Test directly in Teams or Copilot
-5. Make changes → Save → Test
-6. Repeat!
+**One-time setup:**
+- [ ] Install prerequisites (VS Code, .NET 9, Node.js, Azure CLI, Dev Tunnels CLI)
+- [ ] Open project in VS Code
+- [ ] Set `AZURE_SUBSCRIPTION_ID` in `M365Agent/env/.env.local`
+- [ ] Set `AZURE_RESOURCE_GROUP_NAME` in `M365Agent/env/.env.local`
 
-**Resources:**
-- [Microsoft 365 Agents Toolkit Documentation](https://aka.ms/teams-toolkit-docs)
-- [Bot Framework SDK](https://github.com/microsoft/botbuilder-dotnet)
+**Every debug session:**
+- [ ] Press **F5**
+- [ ] Wait for browser to open (~30 seconds after first run, ~3 minutes first time)
+- [ ] Start chatting with your agent!
+
+That's it! Everything else is automatic. ✨
+
+### What Gets Automated
+
+| Task | Automated? | When |
+|------|-----------|------|
+| Create .env files | ✅ Yes | Every F5 |
+| Start dev tunnel | ✅ Yes | Every F5 |
+| Provision Azure resources | ✅ Yes | First F5 only |
+| Update bot endpoint | ✅ Yes | When tunnel URL changes |
+| Build app package | ✅ Yes | Every F5 |
+| Start bot application | ✅ Yes | Every F5 |
+| Attach debugger | ✅ Yes | Every F5 |
+| Sideload agent | ✅ Yes | Every F5 |
+| Open Teams/Copilot | ✅ Yes | Every F5 |
+
+### Typical Debug Session
+
+```
+10:00 AM - Press F5
+10:00:05 - Environment files updated
+10:00:10 - Dev tunnel started
+10:00:15 - Bot endpoint updated in Azure
+10:00:20 - Bot application started
+10:00:25 - Debugger attached
+10:00:30 - Browser opens with agent ready!
+
+10:01 AM - Set breakpoint in code
+10:02 AM - Send message from Teams
+10:02 AM - Breakpoint hits, inspect variables
+10:03 AM - Fix bug, continue execution
+10:04 AM - Stop debugging (Shift+F5)
+10:05 AM - Press F5 again
+10:05:30 - Back to debugging!
+```
+
+### No Manual Steps Required
+
+❌ ~~Create dev tunnel manually~~  
+❌ ~~Run atk provision manually~~  
+❌ ~~Update bot endpoint manually~~  
+❌ ~~Build app package manually~~  
+❌ ~~Start bot manually~~  
+❌ ~~Sideload agent manually~~  
+
+✅ **Just press F5!**
+
+### Understanding the Automation
+
+**Microsoft 365 Agents Toolkit** orchestrates everything through:
+- **Tasks** (`.vscode/tasks.json`) - Sequential automation
+- **Scripts** (`scripts/env.js`, `scripts/devtunnel.ps1`) - Environment setup
+- **Configuration** (`m365agents.local.yml`) - Deployment orchestration
+- **Infrastructure** (`infra/azure-local.bicep`) - Azure resources
+
+All pre-configured and ready to go!
+
+### Moving to Production
+
+When you're ready to deploy to Azure:
+
+1. See **AZURE_DEPLOYMENT.md** for production deployment
+2. Switch environment: `atk provision --env dev`
+3. Deploy to Azure: `atk deploy --env dev`
+
+Production uses:
+- Azure App Service (instead of local machine)
+- Managed Identity (instead of client secret)
+- Static endpoint (instead of dev tunnel)
+- Always-on availability
+
+### Resources
+
+**Documentation:**
+- [Microsoft 365 Agents Toolkit](https://aka.ms/teams-toolkit-docs)
+- [Bot Framework SDK for .NET](https://github.com/microsoft/botbuilder-dotnet)
 - [Dev Tunnels Documentation](https://learn.microsoft.com/azure/developer/dev-tunnels/)
-- [Teams App Development](https://learn.microsoft.com/microsoftteams/platform/)
+- [Teams Platform](https://learn.microsoft.com/microsoftteams/platform/)
 
 **Support:**
-- GitHub Issues: [Teams Toolkit Repository](https://github.com/OfficeDev/TeamsFx/issues)
-- Microsoft Q&A: [Teams Development](https://learn.microsoft.com/answers/topics/microsoft-teams.html)
+- [GitHub Issues - Microsoft 365 Agents Toolkit](https://github.com/OfficeDev/TeamsFx/issues)
+- [Microsoft Q&A - Teams Development](https://learn.microsoft.com/answers/topics/microsoft-teams.html)
+- [Stack Overflow - botframework tag](https://stackoverflow.com/questions/tagged/botframework)
+
+---
+
+**Happy debugging!** 🎉 Just press F5 and start building your M365 agent!
