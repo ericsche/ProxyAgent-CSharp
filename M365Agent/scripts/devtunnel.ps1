@@ -24,7 +24,7 @@ if ($tunnelId -eq "") {
   $tunnelId = $tunnel -split '\r?\n' | Select-String 'Tunnel ID' | ForEach-Object { ($_ -split ':')[1].Trim() }
     
   Write-Host "Creating port and access..."
-  $port = 5000
+  $port = 5130
   devtunnel port create $tunnelId -p $port > $null
   devtunnel access create $tunnelId -p $port -a > $null
     
@@ -51,7 +51,7 @@ if ($tunnelId -eq "") {
   } | Set-Content $envFile
 
   Write-Host "TUNNEL_ID: $tunnelId"
-  Write-Host "BOT_ENDPOINT: $endpoint/api/messages"
+  Write-Host "BOT_ENDPOINT: $endpoint"
   Write-Host "BOT_DOMAIN: $domain"
 }
 

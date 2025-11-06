@@ -41,6 +41,10 @@ provision:
           parameters: ./infra/azure-local.parameters.json
           deploymentName: Deploy-local-bot-infrastructure
       bicepCliVersion: v0.38.33
+    # Note: arm/deploy outputs are automatically captured in ARM_OUTPUTS variable
+    # We extract them and write to environment file in the next step
+  
+
 
   # Generate runtime appsettings to JSON file
   - uses: file/createOrUpdateJsonFile

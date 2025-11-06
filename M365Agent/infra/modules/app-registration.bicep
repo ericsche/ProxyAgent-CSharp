@@ -42,7 +42,7 @@ resource aadApplication 'Microsoft.Graph/applications@v1.0' = {
     requestedAccessTokenVersion: 2
     oauth2PermissionScopes: [
       {
-        id: guid(resourceGroup().id, aadAppName, 'access_as_user')
+        id: guid(aadAppName, 'access_as_user')
         adminConsentDescription: 'Default scope for Agent SSO access'
         adminConsentDisplayName: 'Agent SSO'
         userConsentDescription: 'Default scope for Agent SSO access'
@@ -57,49 +57,49 @@ resource aadApplication 'Microsoft.Graph/applications@v1.0' = {
             // Teams web client
             appId: '1fec8e78-bce4-4aaf-ab1b-5451cc387264'
             delegatedPermissionIds: [
-              guid(resourceGroup().id, aadAppName, 'access_as_user')
+              guid(aadAppName, 'access_as_user')
             ]
           }
           {
             // Teams desktop client
             appId: '5e3ce6c0-2b1f-4285-8d4b-75ee78787346'
             delegatedPermissionIds: [
-              guid(resourceGroup().id, aadAppName, 'access_as_user')
+              guid(aadAppName, 'access_as_user')
             ]
           }
           {
             // Microsoft 365 web application
             appId: '4765445b-32c6-49b0-83e6-1d93765276ca'
             delegatedPermissionIds: [
-              guid(resourceGroup().id, aadAppName, 'access_as_user')
+              guid(aadAppName, 'access_as_user')
             ]
           }
           {
             // Microsoft 365 desktop application
             appId: '0ec893e0-5785-4de6-99da-4ed124e5296c'
             delegatedPermissionIds: [
-              guid(resourceGroup().id, aadAppName, 'access_as_user')
+              guid(aadAppName, 'access_as_user')
             ]
           }
           {
             // Microsoft 365 mobile application Outlook desktop application
             appId: 'd3590ed6-52b3-4102-aeff-aad2292ab01c'
             delegatedPermissionIds: [
-              guid(resourceGroup().id, aadAppName, 'access_as_user')
+              guid(aadAppName, 'access_as_user')
             ]
           }
           {
             // Outlook web application
             appId: 'bc59ab01-8403-45c6-8796-ac3ef710b3e3'
             delegatedPermissionIds: [
-              guid(resourceGroup().id, aadAppName, 'access_as_user')
+              guid(aadAppName, 'access_as_user')
             ]
           }
           {
             // Outlook mobile application
             appId: '27922004-5251-4030-b22d-91ecd9a37ea4'
             delegatedPermissionIds: [
-              guid(resourceGroup().id, aadAppName, 'access_as_user')
+              guid(aadAppName, 'access_as_user')
             ]
           }
 
@@ -162,12 +162,12 @@ var calculatedEncodedTenantId = tenantIdEncoder!.outputs.encodedGuid
 
 // Construct federated credential subject
 // appId encode value is the Bot Service one. it is hardcoded on purpose.
-var myfciSubject ='/eid1/c/pub/t/${calculatedEncodedTenantId}/a/9ExAW52n_ky4ZiS_jhpJIQ/${guid(resourceGroup().id, aadAppName, 'BotServiceOauthConnection')}'
+var myfciSubject ='/eid1/c/pub/t/${calculatedEncodedTenantId}/a/9ExAW52n_ky4ZiS_jhpJIQ/${guid(aadAppName, 'BotServiceOauthConnection')}'
 
 // Federated Identity Credential for Bot Framework token exchange
 // This must be a separate resource as it's a child resource type
 resource federatedCredential 'Microsoft.Graph/applications/federatedIdentityCredentials@v1.0' = {
-  name: '${aadApplication.uniqueName}/${guid(resourceGroup().id, aadAppName, 'BotServiceOauthConnection')}'
+  name: '${aadApplication.uniqueName}/${guid(aadAppName, 'BotServiceOauthConnection')}'
   audiences: [
     'api://AzureADTokenExchange'
   ]

@@ -7,14 +7,11 @@ extension microsoftGraphV1
 @description('The App ID (Client ID) of the existing application registration')
 param appId string
 
-@description('Display name for the service principal')
-param displayName string
-
 // Create Service Principal for the existing application
+// Note: Display name will automatically match the App Registration
 resource servicePrincipal 'Microsoft.Graph/servicePrincipals@v1.0' = {
   appId: appId
   accountEnabled: true
-  displayName: displayName
   servicePrincipalType: 'Application'
   tags: [
     'WindowsAzureActiveDirectoryIntegratedApp'

@@ -228,5 +228,4 @@ appsettings.Production.json
 .DS_Store
 
 # VS Code files
-.vscode
 src/samples/ModelContextProtocol/GitHubMCPServer/Properties/ServiceDependencies/GitHubMCPServer20250311143114 - Web Deploy/profile.arm.json

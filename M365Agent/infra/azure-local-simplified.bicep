@@ -1,26 +1,29 @@
-// Local Development Bicep - Two App Security Model
-// App 1: Bot App (created by M365 Agents Toolkit) - uses client secret for Bot Service authentication
-// App 2: SSO App (created by this Bicep) - uses federated credentials for user authentication
-// This deploys: Bot Service Principal → SSO App Registration → Azure Bot Service → OAuth Connections
+// Local Development Bicep file for M365 Agent
+// Simplified approach: Uses Bot ID (created by M365 Agents Toolkit) for both Bot Service and SSO
+// This deploys: Service Principal → Azure Bot Service → OAuth Connections
+// Note: App Registration is managed by M365 Agents Toolkit, not this Bicep template
 
 targetScope = 'resourceGroup'
 
-@description('Name of the bot')
+@description('Name of the bot (used for display and resource naming)')
 param botName string
 
-@description('The Bot ID (Microsoft App ID) - created by M365 Agents Toolkit')
+@description('The Bot ID (Microsoft App ID) - provided by M365 Agents Toolkit')
 param botId string
 
-@description('Bot messaging endpoint')
+@description('The Bot Object ID - provided by M365 Agents Toolkit')
+param botObjectId string
+
+@description('Bot messaging endpoint (dev tunnel URL)')
 param botEndpoint string
 
-@description('Tenant ID')
+@description('Tenant ID for single-tenant bot configuration')
 param tenantId string
 
 @description('Location for all resources')
 param location string = resourceGroup().location
 
-@description('Bot Service SKU')
+@description('The SKU for the Bot Service (F0 for local development)')
 param botServiceSku string = 'F0'
 
 @description('SSO App ID - use 00000000-0000-0000-0000-000000000000 for first-time deployment')
@@ -28,15 +31,16 @@ param ssoAppId string = '00000000-0000-0000-0000-000000000000'
 
 // Variables
 var botServiceName = '${botName}-local'
-var ssoAppName = '${botName}-UserAuth-local'  // Different name to avoid duplicate
 var nullGuid = '00000000-0000-0000-0000-000000000000'
 var isFirstTimeDeployment = ssoAppId == nullGuid
 
+// Use Bot ID for SSO (single app approach)
+var ssoAppIdValue = botId
+var ssoAppIdUriValue = 'api://botid-${botId}'
+
 // ========================================
-// STEP 0: Create Service Principal for Bot App
+// STEP 0: Create Service Principal for Bot ID
 // ========================================
-// The Bot App is created by M365 Agents Toolkit with a client secret
-// We need to create its service principal for Bot Service authentication
 module botServicePrincipal 'modules/service-principal.bicep' = {
   name: 'deploy-bot-service-principal-local'
   params: {
@@ -45,15 +49,13 @@ module botServicePrincipal 'modules/service-principal.bicep' = {
 }
 
 // ========================================
-// STEP 1: Create SSO App Registration (First-time only)
+// STEP 1: Add Federated Credentials to Bot App (First-time only)
 // ========================================
-// This is a separate app for user authentication using federated credentials
-// No client secret - uses federated credentials instead
-module ssoAppRegistration 'modules/app-registration.bicep' = if (isFirstTimeDeployment) {
-  name: 'deploy-sso-app-registration-local'
+module botFederatedCredentials 'modules/bot-managedidentity.bicep' = if (isFirstTimeDeployment) {
+  name: 'deploy-bot-federated-credentials-local'
   params: {
-    aadAppName: ssoAppName
     botId: botId
+    botObjectId: botObjectId
     tenantId: tenantId
     location: location
   }
@@ -62,7 +64,6 @@ module ssoAppRegistration 'modules/app-registration.bicep' = if (isFirstTimeDepl
 // ========================================
 // STEP 2: Create Azure Bot Service
 // ========================================
-// Uses Bot App (with client secret) for authentication
 resource botService 'Microsoft.BotService/botServices@2021-03-01' = {
   kind: 'azurebot'
   location: 'global'
@@ -95,21 +96,21 @@ resource botServiceMsTeamsChannel 'Microsoft.BotService/botServices/channels@202
 // ========================================
 // STEP 3: Create OAuth Connection for SSO (First-time only)
 // ========================================
-// Uses SSO App with federated credentials for user authentication
 module botOAuthConnection 'modules/bot-oauth-connection.bicep' = if (isFirstTimeDeployment) {
   name: 'deploy-bot-oauth-connection-sso-local'
   params: {
     botServiceName: botServiceName
     connectionName: 'SsoConnection'
-    aadAppId: ssoAppRegistration!.outputs.aadAppId
-    aadAppIdUri: ssoAppRegistration!.outputs.aadAppIdUri
-    federatedCredentialSubject: ssoAppRegistration!.outputs.fciName
-    scopes: '${ssoAppRegistration!.outputs.aadAppIdUri}/access_as_user'
+    aadAppId: ssoAppIdValue
+    aadAppIdUri: ssoAppIdUriValue
+    federatedCredentialSubject: botFederatedCredentials.outputs.fciSubject
+    scopes: '${ssoAppIdUriValue}/access_as_user'
     tenantId: tenantId
     location: 'global'
   }
   dependsOn: [
     botService
+    botFederatedCredentials
   ]
 }
 
@@ -121,15 +122,16 @@ module botOAuthConnectionAIFoundry 'modules/bot-oauth-connection.bicep' = if (is
   params: {
     botServiceName: botServiceName
     connectionName: 'aifoundryaccess'
-    aadAppId: ssoAppRegistration!.outputs.aadAppId
-    aadAppIdUri: ssoAppRegistration!.outputs.aadAppIdUri
-    federatedCredentialSubject: ssoAppRegistration!.outputs.fciName
+    aadAppId: ssoAppIdValue
+    aadAppIdUri: ssoAppIdUriValue
+    federatedCredentialSubject: botFederatedCredentials.outputs.fciSubject
     scopes: 'https://ai.azure.com/user_impersonation'
     tenantId: tenantId
     location: 'global'
   }
   dependsOn: [
     botService
+    botFederatedCredentials
   ]
 }
 
@@ -139,15 +141,30 @@ module botOAuthConnectionAIFoundry 'modules/bot-oauth-connection.bicep' = if (is
 output botServiceName string = botService.name
 output botServiceId string = botService.id
 output botEndpoint string = botEndpoint
-output botId string = botId
+output bot_Id string = botId
 output tenantId string = tenantId
 output botServicePrincipalId string = botServicePrincipal.outputs.servicePrincipalId
 
-// SSO App outputs
-output ssoAppId string = isFirstTimeDeployment ? ssoAppRegistration!.outputs.aadAppId : ssoAppId
-
+// SSO uses the same app as Bot
+output sso_App_Id string = ssoAppIdValue
+output sso_App_Id_Uri string = ssoAppIdUriValue
+output ssoFederatedCredentialName string = isFirstTimeDeployment ? botFederatedCredentials.outputs.fciName : ''
+output ssoFederatedCredentialSubject string = isFirstTimeDeployment ? botFederatedCredentials.outputs.fciSubject : ''
 
 // OAuth Connection names
-output oauthConnectionName string = 'SsoConnection'
-output aifoundryConnectionName string = 'aifoundryaccess'
+output oauth_Connection_Name string = 'SsoConnection'
+output AIFoundry_Connection_Name string = 'aifoundryaccess'
 
+// Summary
+output localDevSummary object = {
+  botName: botName
+  botServiceName: botService.name
+  botEndpoint: botEndpoint
+  botId: botId
+  tenantId: tenantId
+  botServicePrincipalId: botServicePrincipal.outputs.servicePrincipalId
+  ssoAppId: ssoAppIdValue
+  ssoAppIdUri: ssoAppIdUriValue
+  oauthConnectionName: 'SsoConnection'
+  deploymentMode: isFirstTimeDeployment ? 'First-time (created all resources)' : 'Update (bot endpoint only)'
+}

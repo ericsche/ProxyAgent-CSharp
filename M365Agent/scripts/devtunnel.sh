@@ -26,7 +26,7 @@ if [ -z "$tunnelId" ]; then
   tunnelId=$(echo "$tunnel" | grep 'Tunnel ID' | cut -d ':' -f2 | xargs)
 
   echo "Creating port and access..."
-  port=7071
+  port=5130
   devtunnel port create $tunnelId -p $port
   devtunnel access create $tunnelId -p $port -a
 
@@ -46,11 +46,11 @@ if [ -z "$tunnelId" ]; then
 
   # update lines
   for i in "${!lines[@]}"; do
-    if [[ ${lines[i]} == NOTIFICATION_ENDPOINT=* ]]; then
-      lines[i]="NOTIFICATION_ENDPOINT=$endpoint"
+    if [[ ${lines[i]} == BOT_ENDPOINT=* ]]; then
+      lines[i]="BOT_ENDPOINT=$endpoint"
     fi
-    if [[ ${lines[i]} == NOTIFICATION_DOMAIN=* ]]; then
-      lines[i]="NOTIFICATION_DOMAIN=$domain"
+    if [[ ${lines[i]} == BOT_DOMAIN=* ]]; then
+      lines[i]="BOT_DOMAIN=$domain"
     fi
     if [[ ${lines[i]} == TUNNEL_ID=* ]]; then
       lines[i]="TUNNEL_ID=$tunnelId"
@@ -61,8 +61,8 @@ if [ -z "$tunnelId" ]; then
   printf "%s\n" "${lines[@]}" >"$envFile"
 
   echo "TUNNEL_ID: $tunnelId"
-  echo "NOTIFICATION_ENDPOINT: $endpoint"
-  echo "NOTIFICATION_DOMAIN: $domain"
+  echo "BOT_ENDPOINT: $endpoint"
+  echo "BOT_DOMAIN: $domain"
 fi
 
 devtunnel host $tunnelId
