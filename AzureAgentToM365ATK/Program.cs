@@ -16,8 +16,6 @@ builder.Services.AddHttpClient("WebClient", client => client.Timeout = TimeSpan.
 builder.Services.AddHttpContextAccessor();
 builder.Logging.AddConsole();
 
-// Register Semantic Kernel only used for Azure AI Foundry Agent. No LLM calls are made directly from this code.
-builder.Services.AddKernel();
 
 // Agent SDK Registrations: 
 builder.Services.AddCloudAdapter();
