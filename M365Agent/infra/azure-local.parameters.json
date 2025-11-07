@@ -3,7 +3,7 @@
   "contentVersion": "1.0.0.0",
   "parameters": {
     "botName": {
-      "value": "AzureAgentToM365ATK-${{APP_NAME_SUFFIX}}"
+      "value": "AzureAgentToM365ATK-${{RESOURCE_SUFFIX}}-${{APP_NAME_SUFFIX}}"
     },
     "botId": {
       "value": "${{BOT_ID}}"
@@ -15,7 +15,7 @@
       "value": "${{TEAMS_APP_TENANT_ID}}"
     },
     "ssoAppId": {
-      "value": "${{SSOAPPID}}"
+      "value": "${{SSO_APP_ID}}"
     }
   }
 }

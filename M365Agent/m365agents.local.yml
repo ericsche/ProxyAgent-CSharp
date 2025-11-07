@@ -8,7 +8,7 @@ provision:
   - uses: teamsApp/create
     with:
       # Teams app name
-      name: AzureAgentToM365ATK${{APP_NAME_SUFFIX}}
+      name: AzureAgentToM365ATK-${{APP_NAME_SUFFIX}}
     # Write the information of created resources into environment file for
     # the specified environment variable(s).
     writeToEnvironmentFile:
@@ -19,7 +19,7 @@ provision:
   - uses: aadApp/create
     with:
       # The Microsoft Entra application's display name
-      name: AzureAgentToM365ATK-Bot-${{APP_NAME_SUFFIX}}
+      name: AzureAgentToM365ATK-${{RESOURCE_SUFFIX}}-${{APP_NAME_SUFFIX}}-Bot
       generateClientSecret: true
       signInAudience: AzureADMyOrg
     writeToEnvironmentFile:
@@ -123,6 +123,3 @@ provision:
     writeToEnvironmentFile:
       titleId: M365_TITLE_ID
       appId: M365_APP_ID
-
-# There is no need to deploy anything for local development as the application runs locally
-deploy: []

@@ -102,7 +102,7 @@
       ],
       "preLaunchTask": "Start Teams App Locally",
       "postDebugTask": "Stop All Services",
-      "presentation": {
+      "presentatio n": {
         "group": "all",
         "order": 3
       },

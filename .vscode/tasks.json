@@ -7,7 +7,6 @@
         "Ensure env files",
         "Ensure DevTunnel",
         "Provision",
-        "Deploy",
         "Start application"
       ],
       "dependsOrder": "sequence"
@@ -103,28 +102,6 @@
       "command": "provision",
       "args": {
         "env": "local"
-      },
-      "options": {
-        "cwd": "${workspaceFolder}/M365Agent"
-      },
-      "presentation": {
-        "reveal": "always",
-        "panel": "shared"
-      }
-    },
-    {
-      "label": "Deploy",
-      "type": "teamsfx",
-      "command": "deploy",
-      "args": {
-        "env": "local"
-      },
-      "options": {
-        "cwd": "${workspaceFolder}/M365Agent"
-      },
-      "presentation": {
-        "reveal": "always",
-        "panel": "shared"
       }
     },
     {
