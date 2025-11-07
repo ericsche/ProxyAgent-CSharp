@@ -52,6 +52,16 @@ var webAppName = '${resourceBaseName}-app'
 var botServiceName = '${resourceBaseName}-bot'
 var aadAppName = '${resourceBaseName}-sso'
 
+// Setp 0: GUID ENCODING: Encode Tenant ID 
+module guidEncoder 'modules/guid-encoder.bicep' =  {
+  name: 'encode-tenant-guid-local'
+  params: {
+    guidToEncode: tenantId
+    location: location
+  }
+}
+
+
 // Step 1: Create User Assigned Managed Identity for the bot
 module botIdentity 'modules/bot-managedidentity.bicep' = {
   name: 'deploy-bot-identity'
@@ -117,7 +127,7 @@ module appRegistration 'modules/app-registration.bicep' = {
     aadAppName: aadAppName
     botId: botIdentity.outputs.identityClientId
     tenantId: tenantId
-    location: location
+    encodedTenantId: guidEncoder.outputs.encodedGuid
   }
   dependsOn: [
     azureBot
@@ -132,7 +142,7 @@ module botOAuthConnection 'modules/bot-oauth-connection.bicep' = {
     connectionName: 'SsoConnection'
     aadAppId: appRegistration.outputs.aadAppId
     aadAppIdUri: appRegistration.outputs.aadAppIdUri
-    federatedCredentialSubject: appRegistration.outputs.fciName
+    federatedCredentialName: appRegistration.outputs.fciName
     scopes: '${appRegistration.outputs.aadAppIdUri}/access_as_user'
     tenantId: tenantId
     location: 'global'
@@ -148,7 +158,7 @@ module botOAuthConnectionAIFoundry 'modules/bot-oauth-connection.bicep' = {
     connectionName: 'aifoundryaccess'
     aadAppId: appRegistration.outputs.aadAppId
     aadAppIdUri: appRegistration.outputs.aadAppIdUri
-    federatedCredentialSubject: appRegistration.outputs.fciName
+    federatedCredentialName: appRegistration.outputs.fciName
     scopes: 'https://ai.azure.com/user_impersonation'
     tenantId: tenantId
     location: 'global'
