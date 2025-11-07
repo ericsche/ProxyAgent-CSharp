@@ -41,10 +41,7 @@ public class AzureAgent : AgentApplication
             throw new InvalidOperationException("AgentID is not configured.");
         }
 
-        // Setup Agent with Route handlers to manage connecting and responding from the Azure AI Foundry agent.
-
-        // This is handing the events describing when a user is added to the conversation. 
-        OnConversationUpdate(ConversationUpdateEvents.MembersAdded, SendWelcomeMessageAsync);
+        // Setup Agent with Route handlers to manage connecting and responding from the Azure AI Foundry agent
 
         // This is handling the sign out event, which will clear the user authorization token.
         OnMessage("--signout", HandleSignOutAsync);
@@ -57,24 +54,6 @@ public class AzureAgent : AgentApplication
         OnActivity(ActivityTypes.Message, SendMessageToAzureAgent, autoSignInHandlers: ["SSO"]);
 
 
-    }
-
-    /// <summary>
-    /// This handler is called when the MeebersAdded event is triggered in the conversation.
-    /// </summary>
-    /// <param name="turnContext"></param>
-    /// <param name="turnState"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    protected async Task SendWelcomeMessageAsync(ITurnContext turnContext, ITurnState turnState, CancellationToken cancellationToken)
-    {
-        foreach (ChannelAccount member in turnContext.Activity.MembersAdded)
-        {
-            if (member.Id != turnContext.Activity.Recipient.Id)
-            {
-                await turnContext.SendActivityAsync(MessageFactory.Text("Hello and Welcome to the Stocks agent!"), cancellationToken);
-            }
-        }
     }
 
     /// <summary>
