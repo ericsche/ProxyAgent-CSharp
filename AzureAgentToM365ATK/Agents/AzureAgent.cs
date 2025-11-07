@@ -103,7 +103,7 @@ public class AzureAgent : AgentApplication
             // This is a helper class to generate an OBO User Token for the Azure AI Foundry agent from the current user authorization.
             PersistentAgentsClient _aiProjectClient = new PersistentAgentsClient(this._connectionStringForAgent, 
                         // This is a helper class to generate an OBO User Token for the Azure AI Foundry agent from the current user authorization.
-                        new UserAuthorizationTokenWrapper(UserAuthorization, turnContext, "AIFoundry"));
+                        new UserAuthorizationTokenWrapper(UserAuthorization, turnContext, "SSO"));
 
 
             // Get the requested agent by ID.
