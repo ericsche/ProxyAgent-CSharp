@@ -2,7 +2,6 @@
     // C# Development
     "dotnet.defaultSolution": "AzureAgentToM365ATK.sln",
     "omnisharp.enableRoslynAnalyzers": true,
-    "omnisharp.enableImportCompletion": true,
     // Microsoft 365 Agents Toolkit
     "m365agents.telemetry": false,
     // File Associations
@@ -40,5 +39,6 @@
         "ms-vscode.azure-account",
         "msazurermtools.azurerm-vscode-tools",
         "microsoft.vscode-azure-agent-toolkit"
-    ]
+    ],
+    "dotnet.completion.showCompletionItemsFromUnimportedNamespaces": true
 }

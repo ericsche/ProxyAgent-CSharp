@@ -81,7 +81,7 @@ deploy:
   # Build the .NET application
   - uses: cli/runDotnetCommand
     with:
-      args: publish --configuration Debug AzureAgentToM365ATK.csproj
+      args: publish --configuration Release AzureAgentToM365ATK.csproj
       workingDirectory: ../AzureAgentToM365ATK
 
   # Deploy your application to Azure App Service using the zip deploy feature.

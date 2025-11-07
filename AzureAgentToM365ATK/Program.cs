@@ -15,11 +15,12 @@ builder.Services.AddControllers();
 builder.Services.AddHttpClient("WebClient", client => client.Timeout = TimeSpan.FromSeconds(600));
 builder.Services.AddHttpContextAccessor();
 builder.Logging.AddConsole();
-
+builder.Services.AddHealthChecks();
 
 // Agent SDK Registrations: 
 builder.Services.AddCloudAdapter();
 builder.Services.AddAgentAspNetAuthentication(builder.Configuration);
+
 
 builder.AddAgentApplicationOptions();
 builder.AddAgent<AzureAgent>();
@@ -28,7 +29,7 @@ builder.Services.AddSingleton<IStorage, MemoryStorage>();
 
 WebApplication app = builder.Build();
 
-
+app.MapHealthChecks("/health");
 app.UseStaticFiles();
 app.UseRouting();
 app.UseAuthentication();
