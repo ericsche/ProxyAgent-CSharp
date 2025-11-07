@@ -34,14 +34,14 @@ public class AzureAgent : AgentApplication
 
     public AzureAgent(AgentApplicationOptions options, IConfiguration configuration) : base(options)
     {
-        
+
         // TO DO: get the connection string of your Azure AI Foundry project in the portal
         this._connectionStringForAgent = configuration["AIServices:AzureAIFoundryProjectEndpoint"];
         if (string.IsNullOrEmpty(_connectionStringForAgent))
         {
             throw new InvalidOperationException("AzureAIFoundryProjectEndpoint is not configured.");
         }
-        
+
         // TO DO: Get the assistant ID in the Azure AI Foundry project portal for your agent
         this._agentId = configuration["AIServices:AgentID"];
         if (string.IsNullOrEmpty(this._agentId))
@@ -59,11 +59,11 @@ public class AzureAgent : AgentApplication
 
         // This is handling the message activity, which will send the user message to the Azure AI Foundry agent.
         // we are also indicating which auth profile we want to have available for this handler.
-        #if DISABLE_SSO
+#if DISABLE_SSO
             OnActivity(ActivityTypes.Message, SendMessageToAzureAgent);
-        #else
-            OnActivity(ActivityTypes.Message, SendMessageToAzureAgent, autoSignInHandlers: ["SSO"]);
-        #endif
+#else
+        OnActivity(ActivityTypes.Message, SendMessageToAzureAgent, autoSignInHandlers: ["SSO"]);
+#endif
     }
 
     /// <summary>
@@ -110,14 +110,14 @@ public class AzureAgent : AgentApplication
 
             // Set up the PersistentAgentsClient to communicate with the Azure AI Foundry agent.
 
-            #if DISABLE_SSO
+#if DISABLE_SSO
                 PersistentAgentsClient _aiProjectClient = new PersistentAgentsClient(this._connectionStringForAgent, new DefaultAzureCredential());
-            #else
-                // This is a helper class to generate an OBO User Token for the Azure AI Foundry agent from the current user authorization.
-                PersistentAgentsClient _aiProjectClient = new PersistentAgentsClient(this._connectionStringForAgent, 
-                            // This is a helper class to generate an OBO User Token for the Azure AI Foundry agent from the current user authorization.
-                            new UserAuthorizationTokenWrapper(UserAuthorization, turnContext, "SSO"));
-            #endif
+#else
+            // This is a helper class to generate an OBO User Token for the Azure AI Foundry agent from the current user authorization.
+            PersistentAgentsClient _aiProjectClient = new PersistentAgentsClient(this._connectionStringForAgent,
+                        // This is a helper class to generate an OBO User Token for the Azure AI Foundry agent from the current user authorization.
+                        new UserAuthorizationTokenWrapper(UserAuthorization, turnContext, "SSO"));
+#endif
 
             // Get the requested agent by ID.
             Response<PersistentAgent> agentModel = _agentModelCache.TryGetValue(this._agentId, out var cachedModel) ? cachedModel : null;
@@ -136,7 +136,7 @@ public class AzureAgent : AgentApplication
             AIAgent _existingAgent = _aiProjectClient.GetAIAgent(agentModel);
 
             // Get or create thread: 
-            AgentThread _agentThread = GetConversationThread(_existingAgent, turnState); 
+            AgentThread _agentThread = GetConversationThread(_existingAgent, turnState);
 
             // Inform the client that we are working on a response
             await turnContext.StreamingResponse.QueueInformativeUpdateAsync("Sending request to Foundry Agent.", cancellationToken).ConfigureAwait(false);
@@ -147,7 +147,8 @@ public class AzureAgent : AgentApplication
             // This will handle text responses,  if you want to handle attachments and other content types, you would need to extend this method.
             await foreach (AgentRunResponseUpdate response in _existingAgent.RunStreamingAsync(message, _agentThread, cancellationToken: cancellationToken))
             {
-                if (!string.IsNullOrEmpty(response.Text)) {
+                if (!string.IsNullOrEmpty(response.Text))
+                {
                     turnContext.StreamingResponse.QueueTextChunk(response.Text);
                 }
             }
