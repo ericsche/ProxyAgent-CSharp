@@ -72,7 +72,7 @@ provision:
             Handlers:
               SSO:
                 Settings:
-                  AzureBotOAuthConnectionName: ${{OAUTHCONNECTIONNAME}}
+                  AzureBotOAuthConnectionName: ${{AIFOUNDRYCONNECTIONNAME}}
         ConnectionsMap:
           - ServiceUrl: "*"
             Connection: "BotServiceConnection"
