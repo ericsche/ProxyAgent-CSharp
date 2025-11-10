@@ -2,12 +2,11 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Start Teams App Locally",
+      "label": "PreReq & Start Tunnel",
       "dependsOn": [
         "Ensure env files",
         "Ensure DevTunnel",
         "Provision",
-        "Start application"
       ],
       "dependsOrder": "sequence"
     },
@@ -79,24 +78,6 @@
       ]
     },
     {
-      "label": "Validate prerequisites",
-      "type": "teamsfx",
-      "command": "debug-check-prerequisites",
-      "args": {
-        "prerequisites": [
-          "nodejs",
-          "m365Account",
-          "portOccupancy"
-        ],
-        "portOccupancy": [
-          5130
-        ]
-      },
-      "options": {
-        "cwd": "${workspaceFolder}/M365Agent"
-      }
-    },
-    {
       "label": "Provision",
       "type": "teamsfx",
       "command": "provision",
@@ -105,44 +86,16 @@
       }
     },
     {
-      "label": "Start application",
-      "type": "shell",
+      "label": "build",
       "command": "dotnet",
+      "type": "process",
       "args": [
-        "run",
-        "--project",
+        "build",
         "${workspaceFolder}/AzureAgentToM365ATK/AzureAgentToM365ATK.csproj",
-        "--configuration",
-        "Debug",
-        "--launch-profile",
-        "Start Project"
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary"
       ],
-      "isBackground": true,
-      "problemMatcher": {
-        "pattern": [
-          {
-            "regexp": "^.*$",
-            "file": 0,
-            "location": 1,
-            "message": 2
-          }
-        ],
-        "background": {
-          "activeOnStart": true,
-          "beginsPattern": "^.*Building.*$",
-          "endsPattern": "^.*Application started.*|.*Now listening on.*$"
-        }
-      },
-      "presentation": {
-        "reveal": "always",
-        "panel": "dedicated"
-      },
-      "options": {
-        "cwd": "${workspaceFolder}/AzureAgentToM365ATK",
-        "env": {
-          "ASPNETCORE_ENVIRONMENT": "Development"
-        }
-      }
+      "problemMatcher": "$msCompile"
     },
     {
       "label": "Stop All Services",

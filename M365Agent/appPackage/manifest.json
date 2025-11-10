@@ -72,6 +72,7 @@
     "messageTeamMembers"
   ],
   "validDomains": [
-    "${{BOT_DOMAIN}}"
+    "${{BOT_DOMAIN}}",
+    "token.botframework.com"
   ]
 }

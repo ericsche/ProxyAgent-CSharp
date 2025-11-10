@@ -5,9 +5,7 @@
       "name": "Launch in Teams (Edge)",
       "type": "msedge",
       "request": "launch",
-      "preLaunchTask": "Start Teams App Locally",
-      "postDebugTask": "Stop All Services",
-      "url": "https://teams.microsoft.com/l/app/${{TEAMS_APP_ID}}?installAppPackage=true&webjoin=true&appTenantId=${{TEAMS_APP_TENANT_ID}}&login_hint=${{TEAMSFX_M365_USER_NAME}}",
+      "url": "https://teams.microsoft.com/l/app/${TEAMS_APP_ID}?installAppPackage=true&webjoin=true&appTenantId=${{TEAMS_APP_TENANT_ID}}&login_hint=${{TEAMSFX_M365_USER_NAME}}",
       "presentation": {
         "group": "Teams",
         "order": 1
@@ -18,8 +16,6 @@
       "name": "Launch in Teams (Chrome)",
       "type": "chrome",
       "request": "launch",
-      "preLaunchTask": "Start Teams App Locally",
-      "postDebugTask": "Stop All Services",
       "url": "https://teams.microsoft.com/l/app/${{TEAMS_APP_ID}}?installAppPackage=true&webjoin=true&appTenantId=${{TEAMS_APP_TENANT_ID}}&login_hint=${{TEAMSFX_M365_USER_NAME}}",
       "presentation": {
         "group": "Teams",
@@ -31,9 +27,7 @@
       "name": "Launch in Copilot (Edge)",
       "type": "msedge",
       "request": "launch",
-      "preLaunchTask": "Start Teams App Locally",
-      "postDebugTask": "Stop All Services",
-      "url": "https://m365.cloud.microsoft/chat/entity1-d870f6cd-4aa5-4d42-9626-ab690c041429/${{AGENT_HINT}}?auth=2",
+      "url": "https://m365.cloud.microsoft/chat/entity1-d870f6cd-4aa5-4d42-9626-ab690c041429/${local:agent-hint}?auth=2&$login_hint=${TEAMSFX_M365_USER_NAME}&developerMode=Basic",
       "presentation": {
         "group": "Copilot",
         "order": 3
@@ -44,9 +38,7 @@
       "name": "Launch in Copilot (Chrome)",
       "type": "chrome",
       "request": "launch",
-      "preLaunchTask": "Start Teams App Locally",
-      "postDebugTask": "Stop All Services",
-      "url": "https://m365.cloud.microsoft/chat/entity1-d870f6cd-4aa5-4d42-9626-ab690c041429/${{AGENT_HINT}}?auth=2",
+      "url": "https://m365.cloud.microsoft/chat/entity1-d870f6cd-4aa5-4d42-9626-ab690c041429/${{local:agent-hint}}?auth=2&${{TEAMSFX_M365_USER_NAME}}&developerMode=Basic",
       "presentation": {
         "group": "Copilot",
         "order": 4
@@ -54,15 +46,21 @@
       "internalConsoleOptions": "neverOpen"
     },
     {
-      "name": "Attach to Backend",
       "type": "coreclr",
-      "request": "attach",
-      "processId": "${command:pickProcess}",
-      "presentation": {
-        "group": "all",
-        "hidden": true
+      "request": "launch",
+      "name": "Launch AzureAgentToM365ATK",
+      "preLaunchTask": "build",
+      "program": "${workspaceFolder}/AzureAgentToM365ATK/bin/Debug/net9.0/AzureAgentToM365ATK.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/AzureAgentToM365ATK",
+      "stopAtEntry": false,
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
       },
-      "internalConsoleOptions": "neverOpen"
+      "presentation": {
+        "hidden": true,
+        "group": "all"
+      }
     }
   ],
   "compounds": [
@@ -70,9 +68,9 @@
       "name": "Debug in Teams (Edge)",
       "configurations": [
         "Launch in Teams (Edge)",
-        "Attach to Backend"
+        "Launch AzureAgentToM365ATK"
       ],
-      "preLaunchTask": "Start Teams App Locally",
+      "preLaunchTask": "PreReq & Start Tunnel",
       "postDebugTask": "Stop All Services",
       "presentation": {
         "group": "all",
@@ -84,9 +82,9 @@
       "name": "Debug in Teams (Chrome)",
       "configurations": [
         "Launch in Teams (Chrome)",
-        "Attach to Backend"
+        "Launch AzureAgentToM365ATK"
       ],
-      "preLaunchTask": "Start Teams App Locally",
+      "preLaunchTask": "PreReq & Start Tunnel",
       "postDebugTask": "Stop All Services",
       "presentation": {
         "group": "all",
@@ -97,12 +95,12 @@
     {
       "name": "Debug in Copilot (Edge)",
       "configurations": [
+        "Launch AzureAgentToM365ATK",
         "Launch in Copilot (Edge)",
-        "Attach to Backend"
       ],
-      "preLaunchTask": "Start Teams App Locally",
+      "preLaunchTask": "PreReq & Start Tunnel",
       "postDebugTask": "Stop All Services",
-      "presentatio n": {
+      "presentation": {
         "group": "all",
         "order": 3
       },
@@ -111,10 +109,10 @@
     {
       "name": "Debug in Copilot (Chrome)",
       "configurations": [
-        "Launch in Copilot (Chrome)",
-        "Attach to Backend"
+        "Launch AzureAgentToM365ATK",
+        "Launch in Copilot (Chrome)"
       ],
-      "preLaunchTask": "Start Teams App Locally",
+      "preLaunchTask": "PreReq & Start Tunnel",
       "postDebugTask": "Stop All Services",
       "presentation": {
         "group": "all",
