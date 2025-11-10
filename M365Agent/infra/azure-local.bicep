@@ -152,11 +152,9 @@ module botServicePrincipal 'modules/service-principal.bicep' = if (isFirstTimeDe
 module SSOServicePrincipal 'modules/service-principal.bicep' = if (isFirstTimeDeployment) {
   name: 'deploy-sso-service-principal-local'
   params: {
-    appId: ssoAppId
+    appId: ssoAppRegistration.outputs.aadAppId
   }
-  dependsOn: [
-    ssoAppRegistration
-  ]
+
 }
 
 // ========================================
