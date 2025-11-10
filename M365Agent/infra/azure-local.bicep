@@ -145,6 +145,21 @@ module botServicePrincipal 'modules/service-principal.bicep' = if (isFirstTimeDe
 }
 
 // ========================================
+// STEP 6: Create Service Principal for SSO App (First-time only)
+// ========================================
+// The SSO App is created by M365 Agents Toolkit with a client secret
+// We create its service principal after SSO app registration to avoid replication timing issues
+module SSOServicePrincipal 'modules/service-principal.bicep' = if (isFirstTimeDeployment) {
+  name: 'deploy-sso-service-principal-local'
+  params: {
+    appId: ssoAppId
+  }
+  dependsOn: [
+    ssoAppRegistration
+  ]
+}
+
+// ========================================
 // OUTPUTS
 // ========================================
 output botServiceName string = isFirstTimeDeployment ? botService.name : botName

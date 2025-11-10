@@ -50,7 +50,7 @@ param additionalAppSettings array = []
 var identityName = '${resourceBaseName}-identity'
 var webAppName = '${resourceBaseName}-app'
 var botServiceName = '${resourceBaseName}-bot'
-var aadAppName = '${resourceBaseName}-sso'
+var aadAppName = '${resourceBaseName}-UserAuth'
 
 // Setp 0: GUID ENCODING: Encode Tenant ID 
 module guidEncoder 'modules/guid-encoder.bicep' =  {
@@ -164,6 +164,20 @@ module botOAuthConnectionAIFoundry 'modules/bot-oauth-connection.bicep' = {
     location: 'global'
   }
 }
+
+
+// ========================================
+// STEP 7: Create Service Principal for SSO App (First-time only)
+// ========================================
+// The SSO App is created by M365 Agents Toolkit with a client secret
+// We create its service principal after SSO app registration to avoid replication timing issues
+module SSOServicePrincipal 'modules/service-principal.bicep' = {
+  name: 'deploy-sso-service-principal-local'
+  params: {
+    appId: appRegistration.outputs.aadAppId
+  }
+}
+
 
 // Outputs for reference and further configuration
 output resourceBaseName string = resourceBaseName
