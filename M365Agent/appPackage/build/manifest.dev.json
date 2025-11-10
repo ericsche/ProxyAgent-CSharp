@@ -2,12 +2,16 @@
     "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/vdevPreview/MicrosoftTeams.schema.json",
     "manifestVersion": "devPreview",
     "version": "1.0.0",
-    "id": "3fcc589b-6ba0-44f2-9c00-b31117170c9b",
+    "id": "baa17305-ab3f-4834-837e-5f105d11c178",
     "developer": {
         "name": "Teams App, Inc.",
         "websiteUrl": "https://www.example.com",
         "privacyUrl": "https://www.example.com/privacy",
         "termsOfUseUrl": "https://www.example.com/termofuse"
+    },
+    "icons": {
+        "color": "color.png",
+        "outline": "outline.png"
     },
     "name": {
         "short": "AzureAgentToM365ATKdev",
@@ -17,22 +21,24 @@
         "short": "Azure-powered agent for Microsoft 365 Copilot",
         "full": "Custom engine agent that integrates Azure services with Microsoft 365 Copilot for enhanced productivity"
     },
-    "icons": {
-        "outline": "outline.png",
-        "color": "color.png"
-    },
     "accentColor": "#FFFFFF",
-    "configurableTabs": [],
-    "staticTabs": [],
+    "copilotAgents": {
+        "customEngineAgents": [
+            {
+                "type": "bot",
+                "id": "4ccdb247-edff-49da-a00f-02bc23eeb8db"
+            }
+        ]
+    },
     "bots": [
         {
-            "botId": "5889a571-6f9f-4774-802e-945bb0325faa",
-            "isNotificationOnly": false,
-            "supportsFiles": false,
+            "botId": "4ccdb247-edff-49da-a00f-02bc23eeb8db",
             "scopes": [
                 "copilot",
                 "personal"
             ],
+            "supportsFiles": false,
+            "isNotificationOnly": false,
             "commandLists": [
                 {
                     "scopes": [
@@ -45,32 +51,26 @@
                             "description": "How can you help me?"
                         },
                         {
-                            "title": "MSFT in last 2 weeks",
-                            "description": "What was the MSFT stock value in the last 2 weeks?"
+                            "title": "Hotels in the policy",
+                            "description": "What are the available hotels?"
                         }
                     ]
                 }
             ]
         }
     ],
+    "webApplicationInfo": {
+        "id": "6804fa0e-addd-43f6-89bd-b31dcf1c3bd9",
+        "resource": "api://botid-4ccdb247-edff-49da-a00f-02bc23eeb8db"
+    },
     "composeExtensions": [],
+    "configurableTabs": [],
+    "staticTabs": [],
     "permissions": [
         "identity",
         "messageTeamMembers"
     ],
     "validDomains": [
-        "bot09018e-app.azurewebsites.net"
-    ],
-    "webApplicationInfo": {
-        "id": "04797dda-0fae-4d2b-891f-6d353eafa1d8",
-        "resource": "api://botid-5889a571-6f9f-4774-802e-945bb0325faa"
-    },
-    "copilotAgents": {
-        "customEngineAgents": [
-            {
-                "id": "5889a571-6f9f-4774-802e-945bb0325faa",
-                "type": "bot"
-            }
-        ]
-    }
+        "bot16e961-app.azurewebsites.net"
+    ]
 }

@@ -1,5 +1,13 @@
-﻿﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
+
+// Use this flag to enable the no SSO mode, which allows the agent to run without user authentication.
+// We will then use DefaultAzureCredential (set via 'az login') to authenticate the agent in the Azure AI Foundry project.
+// #define DISABLE_SSO
+
+#if DISABLE_SSO
+using Azure.Identity;
+#endif
 
 using Azure;
 using Azure.AI.Agents.Persistent;
@@ -26,14 +34,14 @@ public class AzureAgent : AgentApplication
 
     public AzureAgent(AgentApplicationOptions options, IConfiguration configuration) : base(options)
     {
-        
+
         // TO DO: get the connection string of your Azure AI Foundry project in the portal
         this._connectionStringForAgent = configuration["AIServices:AzureAIFoundryProjectEndpoint"];
         if (string.IsNullOrEmpty(_connectionStringForAgent))
         {
             throw new InvalidOperationException("AzureAIFoundryProjectEndpoint is not configured.");
         }
-        
+
         // TO DO: Get the assistant ID in the Azure AI Foundry project portal for your agent
         this._agentId = configuration["AIServices:AgentID"];
         if (string.IsNullOrEmpty(this._agentId))
@@ -51,9 +59,11 @@ public class AzureAgent : AgentApplication
 
         // This is handling the message activity, which will send the user message to the Azure AI Foundry agent.
         // we are also indicating which auth profile we want to have available for this handler.
+#if DISABLE_SSO
+            OnActivity(ActivityTypes.Message, SendMessageToAzureAgent);
+#else
         OnActivity(ActivityTypes.Message, SendMessageToAzureAgent, autoSignInHandlers: ["SSO"]);
-
-
+#endif
     }
 
     /// <summary>
@@ -100,18 +110,21 @@ public class AzureAgent : AgentApplication
 
             // Set up the PersistentAgentsClient to communicate with the Azure AI Foundry agent.
 
+#if DISABLE_SSO
+                PersistentAgentsClient _aiProjectClient = new PersistentAgentsClient(this._connectionStringForAgent, new DefaultAzureCredential());
+#else
             // This is a helper class to generate an OBO User Token for the Azure AI Foundry agent from the current user authorization.
-            PersistentAgentsClient _aiProjectClient = new PersistentAgentsClient(this._connectionStringForAgent, 
+            PersistentAgentsClient _aiProjectClient = new PersistentAgentsClient(this._connectionStringForAgent,
                         // This is a helper class to generate an OBO User Token for the Azure AI Foundry agent from the current user authorization.
                         new UserAuthorizationTokenWrapper(UserAuthorization, turnContext, "SSO"));
-
+#endif
 
             // Get the requested agent by ID.
             Response<PersistentAgent> agentModel = _agentModelCache.TryGetValue(this._agentId, out var cachedModel) ? cachedModel : null;
             if (agentModel == null)
             {
                 // subtle hint to the client that the agent model is being fetched.
-                await turnContext.StreamingResponse.QueueInformativeUpdateAsync("Arranging deck chairs.", cancellationToken).ConfigureAwait(false);
+                await turnContext.StreamingResponse.QueueInformativeUpdateAsync("Connecting to Azure AI Foundry.", cancellationToken).ConfigureAwait(false);
 
                 // If the agent model is not found in the conversation state, fetch it from the Azure AI Foundry project.
                 agentModel = await _aiProjectClient.Administration.GetAgentAsync(this._agentId).ConfigureAwait(false);
@@ -123,10 +136,10 @@ public class AzureAgent : AgentApplication
             AIAgent _existingAgent = _aiProjectClient.GetAIAgent(agentModel);
 
             // Get or create thread: 
-            AgentThread _agentThread = GetConversationThread(_existingAgent, turnState); 
+            AgentThread _agentThread = GetConversationThread(_existingAgent, turnState);
 
             // Inform the client that we are working on a response
-            await turnContext.StreamingResponse.QueueInformativeUpdateAsync("Flagging stock traders down..", cancellationToken).ConfigureAwait(false);
+            await turnContext.StreamingResponse.QueueInformativeUpdateAsync("Sending request to Foundry Agent.", cancellationToken).ConfigureAwait(false);
 
             // Create a new message to send to the Azure agent
             ChatMessage message = new(ChatRole.User, turnContext.Activity.Text);
@@ -135,14 +148,16 @@ public class AzureAgent : AgentApplication
             await foreach (AgentRunResponseUpdate response in _existingAgent.RunStreamingAsync(message, _agentThread, cancellationToken: cancellationToken))
             {
                 if (!string.IsNullOrEmpty(response.Text))
+                {
                     turnContext.StreamingResponse.QueueTextChunk(response.Text);
+                }
             }
             turnState.Conversation.SetValue("conversation.threadInfo", ProtocolJsonSerializer.ToJson(_agentThread.Serialize()));
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error sending message to Azure agent: {ex.Message}");
-            turnContext.StreamingResponse.QueueTextChunk("An error occurred while processing your request.");
+            turnContext.StreamingResponse.QueueTextChunk($"An error occurred while processing your request. {ex.Message}");
         }
         finally
         {

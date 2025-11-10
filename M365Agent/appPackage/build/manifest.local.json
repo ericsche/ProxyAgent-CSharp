@@ -2,7 +2,7 @@
     "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/vdevPreview/MicrosoftTeams.schema.json",
     "manifestVersion": "devPreview",
     "version": "1.0.0",
-    "id": "b8cb6ff0-149a-4fd8-a0d7-f16b5f5d2315",
+    "id": "dbb6975a-4e4a-40e2-830b-0814b06cfdea",
     "developer": {
         "name": "Teams App, Inc.",
         "websiteUrl": "https://www.example.com",
@@ -26,7 +26,7 @@
     "staticTabs": [],
     "bots": [
         {
-            "botId": "bcf5396d-f2a4-4109-9605-95332e1c57ca",
+            "botId": "663b43b1-2632-4d73-b46f-a0cce6581562",
             "isNotificationOnly": false,
             "supportsFiles": false,
             "scopes": [
@@ -45,8 +45,8 @@
                             "description": "How can you help me?"
                         },
                         {
-                            "title": "MSFT in last 2 weeks",
-                            "description": "What was the MSFT stock value in the last 2 weeks?"
+                            "title": "Hotels in the policy",
+                            "description": "What are the available hotels?"
                         }
                     ]
                 }
@@ -59,16 +59,16 @@
         "messageTeamMembers"
     ],
     "validDomains": [
-        "neat-dog-dp38k1v-5130.euw.devtunnels.ms"
+        "interesting-ocean-48v2mk8-5130.uks1.devtunnels.ms"
     ],
     "webApplicationInfo": {
-        "id": "508bd6a3-f3fe-4978-974f-8c6486c7dd29",
-        "resource": "api://botid-bcf5396d-f2a4-4109-9605-95332e1c57ca"
+        "id": "3362c980-062f-42ba-b261-909691bb0644",
+        "resource": "api://botid-663b43b1-2632-4d73-b46f-a0cce6581562"
     },
     "copilotAgents": {
         "customEngineAgents": [
             {
-                "id": "bcf5396d-f2a4-4109-9605-95332e1c57ca",
+                "id": "663b43b1-2632-4d73-b46f-a0cce6581562",
                 "type": "bot"
             }
         ]
