@@ -23,7 +23,7 @@ param location string = resourceGroup().location
 @description('Bot Service SKU')
 param botServiceSku string = 'F0'
 
-@description('SSO App ID - use 00000000-0000-0000-0000-000000000000 for first-time deployment')
+@description('SSO App ID')
 param ssoAppId string = '00000000-0000-0000-0000-000000000000'
 
 // Variables
@@ -68,7 +68,7 @@ resource botService 'Microsoft.BotService/botServices@2021-03-01' = if (isFirstT
   name: botName
   properties: {
     displayName: botName
-    endpoint: botEndpoint
+    endpoint: '${botEndpoint}/api/messages'
     msaAppId: botId
     msaAppTenantId: tenantId
     msaAppType: 'SingleTenant'
