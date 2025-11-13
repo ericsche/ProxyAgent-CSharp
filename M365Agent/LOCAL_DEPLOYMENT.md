@@ -222,6 +222,7 @@ That's it! Everything else happens automatically.
 
 2. **Create a permanent public dev tunnel:**
    - Open the **Start Menu** in Visual Studio
+   
    [![Start Menu](../images/VSscreen001.png)]
    - Select **Create a Tunnel**
    - Configure tunnel as:
