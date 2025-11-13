@@ -55,8 +55,7 @@ sequenceDiagram
         Bot->>Teams: Process request (authenticated)
     end
     
-    Teams->>User: Display Agent response 
-    
+    Teams->>User: Display Agent response
 ```
 
 **Key Points:**
