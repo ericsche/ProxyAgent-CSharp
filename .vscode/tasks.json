@@ -11,6 +11,14 @@
       "dependsOrder": "sequence"
     },
     {
+      "label": "test build",
+      "dependsOn": [
+        "build",
+        "Launch Edge - Copilot"
+      ],
+      "dependsOrder": "sequence"
+    },
+    {
       "label": "Ensure env files",
       "type": "shell",
       "command": "node ./scripts/env.js",
@@ -104,6 +112,32 @@
       "presentation": {
         "reveal": "always",
         "panel": "shared"
+      }
+    },
+    {
+      "label": "Launch Edge - Teams",
+      "type": "shell",
+      "command": "Start-Process 'msedge' 'https://teams.microsoft.com/l/app/${{TEAMS_APP_ID}}?installAppPackage=true&webjoin=true&${account-hint}'",
+      "options": {
+        "shell": {
+          "executable": "pwsh.exe",
+          "args": [
+            "-Command"
+          ]
+        }
+      }
+    },
+    {
+      "label": "Launch Edge - Copilot",
+      "type": "shell",
+      "command": "Start-Process 'msedge' 'https://m365.cloud.microsoft/chat/entity1-d870f6cd-4aa5-4d42-9626-ab690c041429/${{agent-hint}}?auth=2&${account-hint}&developerMode=Basic'",
+      "options": {
+        "shell": {
+          "executable": "pwsh.exe",
+          "args": [
+            "-Command"
+          ]
+        }
       }
     }
   ]
