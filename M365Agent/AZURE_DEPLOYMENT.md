@@ -66,7 +66,7 @@ graph TB
         end
         
         subgraph Step2["Step 2: App Service"]
-            AppServicePlan["App Service Plan (Linux, B1)"]
+            AppServicePlan["App Service Plan (Windows, B1)"]
             WebApp["Web App (.NET 9)<br/>- Uses Managed Identity<br/>- Health Check: /health<br/>- HTTPS Only<br/>- Always On"]
             AppServicePlan --> WebApp
         end
@@ -274,9 +274,9 @@ Location: Same as resource group
 **Resources Created:**
 
 1. **App Service Plan**
-   - OS: Linux
+   - OS: Windows
    - SKU: B1 (Basic) - configurable
-   - Reserved: true
+   - Reserved: false
 
 2. **Web App**
    - Runtime: .NET 9.0
@@ -744,16 +744,16 @@ Monthly cost estimates for Azure resources (USD, as of 2025):
 ### Basic Development (B1 + Free Bot)
 | Resource | SKU | Cost/Month |
 |----------|-----|------------|
-| App Service Plan | B1 (Linux) | ~$13 |
+| App Service Plan | B1 (Windows) | ~$55 |
 | Bot Service | F0 (Free) | $0 |
 | Managed Identity | - | $0 |
 | App Registration | - | $0 |
-| **Total** | | **~$13/month** |
+| **Total** | | **~$55/month** |
 
 ### Standard Production (S1 + Standard Bot)
 | Resource | SKU | Cost/Month |
 |----------|-----|------------|
-| App Service Plan | S1 (Linux) | ~$70 |
+| App Service Plan | S1 (Windows) | ~$70 |
 | Bot Service | S1 (Standard) | ~$0.50 per 1,000 messages |
 | Managed Identity | - | $0 |
 | App Registration | - | $0 |
@@ -762,7 +762,7 @@ Monthly cost estimates for Azure resources (USD, as of 2025):
 ### Premium Production (P1v2 + Standard Bot)
 | Resource | SKU | Cost/Month |
 |----------|-----|------------|
-| App Service Plan | P1v2 (Linux) | ~$146 |
+| App Service Plan | P1v2 (Windows) | ~$146 |
 | Bot Service | S1 (Standard) | ~$0.50 per 1,000 messages |
 | Application Insights | Standard | ~$2-10 (if enabled) |
 | **Total** | | **~$150-200/month** |
