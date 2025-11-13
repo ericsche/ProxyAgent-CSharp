@@ -5,7 +5,7 @@ This is a proxy solution that connects Azure AI Foundry agents to Microsoft 365 
 
 ## Technology Stack
 - **.NET 9** - Bot application runtime
-- **Bot Framework SDK** - Microsoft Bot Framework
+- **M365 Agent SDK** - Microsoft 365 Agent SDK
 - **Microsoft 365 Agents Toolkit** - Formerly Teams Toolkit
 - **Azure AI Foundry Agent SDK** - For agent integration
 - **Bicep** - Infrastructure as Code
