@@ -6,56 +6,51 @@ The `bot-oauth-connection.bicep` module configures Azure AD v2 OAuth connection 
 ## SSO Flow for Agents in Teams & M365 Copilot
 
 ```mermaid
+---
+config:
+  theme: default
+---
 sequenceDiagram
-    participant User as Agent User
-    participant Teams as M365 Copilot
-    participant Bot as Azure Bot Service
-    participant BF as Azure Bot Service<br/>Token Service
-    participant Store as Azure Bot Service<br/>Token Store
-    participant AAD as Microsoft Entra ID
-
-    User->>Teams: 1. Send message to Agent
-    Teams->>Bot: Forward message
-    Bot->>BF: 2. Request sign-in link
-    
-    alt Bot app
-        BF->>Bot: Return sign-in link
-        Bot->>Teams: 3. Send OAuth card
-
-    
-    Teams->>Teams: Check if SSO enabled
-    
-    alt SSO enabled
-        Teams->>Bot: 4. Send token exchange request
-        Bot->>BF: Forward token exchange
-        BF->>AAD: Exchange token
-        
-        alt First time user
-            AAD->>Teams: 5. Request consent
-            Teams->>User: Display consent dialog
-            User->>Teams: Grant consent
-            Teams->>AAD: Consent granted
-            AAD->>BF: Return access token
-        else Returning user
-            AAD->>BF: Return access token
-        end
-        
-        BF->>Store: 6. Store token
-        BF->>Bot: Token available
-        Bot->>Teams: Process request (authenticated)
-        
-    else SSO disabled or consent fails
-        Teams->>User: Display sign-in button
-        User->>Teams: Click sign-in
-        Teams->>AAD: Redirect to sign-in page
-        User->>AAD: Sign in & grant access
-        AAD->>BF: Return access token
-        BF->>Store: Store token
-        BF->>Bot: Token available
-        Bot->>Teams: Process request (authenticated)
+  participant User as Agent User
+  participant Teams as M365 Copilot
+  participant Bot as Azure Bot Service
+  participant BF as Azure Bot Service<br/>Token Service
+  participant Store as Azure Bot Service<br/>Token Store
+  participant AAD as Microsoft Entra ID
+  User ->> Teams: 1. Send message to Agent
+  Teams ->> Bot: Forward message
+  Bot ->> BF: 2. Request sign-in link
+    BF ->> Bot: Return sign-in link
+    Bot ->> Teams: 3. Send OAuth card
+  Teams ->> Teams: Check if SSO enabled
+  alt SSO enabled
+    Teams ->> Bot: 4. Send token exchange request
+    Bot ->> BF: Forward token exchange
+    BF ->> AAD: Exchange token
+    alt First time user
+      AAD ->> Teams: 5. Request consent
+      Teams ->> User: Display consent dialog
+      User ->> Teams: Grant consent
+      Teams ->> AAD: Consent granted
+      AAD ->> BF: Return access token
+    else Returning user
+      AAD ->> BF: Return access token
     end
-    
-    Teams->>User: Display Agent response
+    BF ->> Store: 6. Store token
+    BF ->> Bot: Token available
+    Bot ->> Teams: Process request (authenticated)
+  else SSO disabled or consent fails
+    Teams ->> User: Display sign-in button
+    User ->> Teams: Click sign-in
+    Teams ->> AAD: Redirect to sign-in page
+    User ->> AAD: Sign in & grant access
+    AAD ->> BF: Return access token
+    BF ->> Store: Store token
+    BF ->> Bot: Token available
+    Bot ->> Teams: Process request (authenticated)
+  end
+  Teams ->> User: Display Agent response
+
 ```
 
 **Key Points:**
