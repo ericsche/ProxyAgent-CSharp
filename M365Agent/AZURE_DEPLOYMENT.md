@@ -56,53 +56,45 @@ When you run `atk provision --env dev`, the following Azure resources are create
 
 ## Architecture
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                     Azure Subscription                          │
-│                                                                 │
-│  Step 1: Managed Identity                                      │
-│  ┌──────────────────────────┐                                 │
-│  │ User Assigned Identity   │                                 │
-│  │ - Bot authentication     │                                 │
-│  │ - No secrets required    │                                 │
-│  └────────────┬─────────────┘                                 │
-│               │                                                │
-│  Step 2: App Service        ↓                                 │
-│  ┌──────────────────────────────────┐                         │
-│  │ App Service Plan (Linux, B1)     │                         │
-│  │ ┌──────────────────────────────┐ │                         │
-│  │ │ Web App (.NET 9)             │ │                         │
-│  │ │ - Uses Managed Identity      │ │                         │
-│  │ │ - Health Check: /health      │ │                         │
-│  │ │ - HTTPS Only                 │ │                         │
-│  │ │ - Always On                  │ │                         │
-│  │ └──────────────────────────────┘ │                         │
-│  └──────────────┬───────────────────┘                         │
-│                 │                                              │
-│  Step 3: Azure Bot ↓                                          │
-│  ┌──────────────────────────────────┐                         │
-│  │ Bot Service (Single Tenant)      │                         │
-│  │ - Teams Channel (auto-enabled)   │                         │
-│  │ - Uses Managed Identity          │                         │
-│  │ - Messaging Endpoint             │                         │
-│  └──────────────┬───────────────────┘                         │
-│                 │                                              │
-│  Step 4: App Registration ↓                                   │
-│  ┌──────────────────────────────────┐                         │
-│  │ Entra ID Application (SSO)       │                         │
-│  │ - OAuth Scope: access_as_user    │                         │
-│  │ - Federated Credentials          │                         │
-│  │ - Pre-authorized Teams Clients   │                         │
-│  └──────────────┬───────────────────┘                         │
-│                 │                                              │
-│  Step 5: OAuth Connection ↓                                   │
-│  ┌──────────────────────────────────┐                         │
-│  │ Bot OAuth Connection             │                         │
-│  │ - AAD v2 with Federated Creds    │                         │
-│  │ - SSO Token Exchange             │                         │
-│  │ - Scopes: openid profile         │                         │
-│  └──────────────────────────────────┘                         │
-└─────────────────────────────────────────────────────────────────┘
+```mermaid
+graph TB
+    subgraph Azure["Azure Subscription"]
+        direction TB
+        
+        subgraph Step1["Step 1: Managed Identity"]
+            Identity["User Assigned Identity<br/>- Bot authentication<br/>- No secrets required"]
+        end
+        
+        subgraph Step2["Step 2: App Service"]
+            AppServicePlan["App Service Plan (Linux, B1)"]
+            WebApp["Web App (.NET 9)<br/>- Uses Managed Identity<br/>- Health Check: /health<br/>- HTTPS Only<br/>- Always On"]
+            AppServicePlan --> WebApp
+        end
+        
+        subgraph Step3["Step 3: Azure Bot"]
+            BotService["Bot Service (Single Tenant)<br/>- Teams Channel (auto-enabled)<br/>- Uses Managed Identity<br/>- Messaging Endpoint"]
+        end
+        
+        subgraph Step4["Step 4: App Registration"]
+            SSOApp["Entra ID Application (SSO)<br/>- OAuth Scope: access_as_user<br/>- Federated Credentials<br/>- Pre-authorized Teams Clients"]
+        end
+        
+        subgraph Step5["Step 5: OAuth Connection"]
+            OAuth["Bot OAuth Connection<br/>- AAD v2 with Federated Creds<br/>- SSO Token Exchange<br/>- Scopes: openid profile"]
+        end
+        
+        Identity --> WebApp
+        WebApp --> BotService
+        BotService --> SSOApp
+        SSOApp --> OAuth
+    end
+    
+    style Azure fill:#e1f5ff,stroke:#0078d4,stroke-width:2px
+    style Step1 fill:#f0f0f0,stroke:#666,stroke-width:1px
+    style Step2 fill:#f0f0f0,stroke:#666,stroke-width:1px
+    style Step3 fill:#f0f0f0,stroke:#666,stroke-width:1px
+    style Step4 fill:#f0f0f0,stroke:#666,stroke-width:1px
+    style Step5 fill:#f0f0f0,stroke:#666,stroke-width:1px
 ```
 
 ---

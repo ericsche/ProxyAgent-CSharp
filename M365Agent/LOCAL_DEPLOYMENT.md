@@ -63,51 +63,44 @@ Local development is **fully automated** through Microsoft 365 Agents Toolkit. S
 
 ## Architecture
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                     Azure Subscription                          │
-│                                                                 │
-│  Step 1: Bot App Registration                                  │
-│  ┌──────────────────────────┐                                 │
-│  │ Entra ID Application     │                                 │
-│  │ - Single Tenant          │                                 │
-│  │ - Client Secret (Manual) │                                 │
-│  └────────────┬─────────────┘                                 │
-│               │                                                │
-│  Step 2: Azure Bot Service ↓                                  │
-│  ┌──────────────────────────────────┐                         │
-│  │ Bot Service                      │                         │
-│  │ - Single Tenant Auth             │                         │
-│  │ - Teams Channel                  │                         │
-│  │ - Dynamic Endpoint (devtunnel)   │                         │
-│  └──────────────┬───────────────────┘                         │
-│                 │                                              │
-│  Step 3: SSO App Registration ↓                               │
-│  ┌──────────────────────────────────┐                         │
-│  │ Entra ID Application             │                         │
-│  │ - OAuth Scopes (access_as_user)  │                         │
-│  │ - Federated Credentials          │                         │
-│  │ - Pre-authorized Clients         │                         │
-│  └──────────────┬───────────────────┘                         │
-│                 │                                              │
-│  Step 4: OAuth Connection ↓                                   │
-│  ┌──────────────────────────────────┐                         │
-│  │ Bot OAuth Connection             │                         │
-│  │ - AAD v2 with Federated Creds    │                         │
-│  │ - SSO Token Exchange             │                         │
-│  └──────────────────────────────────┘                         │
-└─────────────────────────────────────────────────────────────────┘
-                       │
-                       ↓ (Secure tunnel)
-                       
-            Local Development Machine
-        ┌──────────────────────────────┐
-        │  .NET 9 Bot Application      │
-        │  - VS Code                   │
-        │  - Debugger Attached         │
-        │  - Port: 5130                │
-        │  - Dev tunnel (automatic)    │
-        └──────────────────────────────┘
+```mermaid
+graph TB
+    subgraph Azure["Azure Subscription"]
+        direction TB
+        
+        subgraph Step1["Step 1: Bot App Registration"]
+            BotApp["Entra ID Application<br/>- Single Tenant<br/>- Client Secret"]
+        end
+        
+        subgraph Step2["Step 2: Azure Bot Service"]
+            BotService["Bot Service<br/>- Single Tenant Auth<br/>- Teams Channel<br/>- Dynamic Endpoint"]
+        end
+        
+        subgraph Step3["Step 3: SSO App Registration"]
+            SSOApp["Entra ID Application<br/>- OAuth Scopes<br/>- Federated Credentials<br/>- Pre-authorized Clients"]
+        end
+        
+        subgraph Step4["Step 4: OAuth Connection"]
+            OAuth["Bot OAuth Connection<br/>- AAD v2 with Federated Creds<br/>- SSO Token Exchange"]
+        end
+        
+        BotApp --> BotService
+        BotService --> SSOApp
+        SSOApp --> OAuth
+    end
+    
+    OAuth -.->|"Secure Tunnel"| LocalBot
+    
+    subgraph Local["Local Development Machine"]
+        LocalBot[".NET 9 Bot Application<br/>- VS Code<br/>- Debugger Attached<br/>- Port: 5130<br/>- Dev tunnel (automatic)"]
+    end
+    
+    style Azure fill:#e1f5ff,stroke:#0078d4,stroke-width:2px
+    style Local fill:#fff4e1,stroke:#ff8c00,stroke-width:2px
+    style Step1 fill:#f0f0f0,stroke:#666,stroke-width:1px
+    style Step2 fill:#f0f0f0,stroke:#666,stroke-width:1px
+    style Step3 fill:#f0f0f0,stroke:#666,stroke-width:1px
+    style Step4 fill:#f0f0f0,stroke:#666,stroke-width:1px
 ```
 
 ---
