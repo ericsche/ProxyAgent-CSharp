@@ -3,7 +3,7 @@
 ## Overview
 The `bot-oauth-connection.bicep` module configures Azure AD v2 OAuth connection with federated credentials for your M365 Agent bot. This enables Single Sign-On (SSO) in Microsoft Teams.
 
-## SSO Flow for Teams Bots
+## SSO Flow for Agents in Teams & M365 Copilot
 
 ```mermaid
 sequenceDiagram
@@ -55,7 +55,7 @@ sequenceDiagram
         Bot->>Teams: Process request (authenticated)
     end
     
-    Teams->>User: Display bot response
+    Teams->>User: Display Agent response
 ```
 
 **Key Points:**
