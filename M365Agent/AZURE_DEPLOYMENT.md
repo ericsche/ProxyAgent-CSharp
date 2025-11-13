@@ -84,6 +84,7 @@ graph TB
         end
         
         Identity --> WebApp
+        Identity --> BotService
         WebApp --> BotService
         BotService --> SSOApp
         SSOApp --> OAuth
