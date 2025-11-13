@@ -10,7 +10,7 @@ This solution demonstrates how to integrate an Azure AI Foundry agent with Micro
 - How to connect an AI Foundry Agent to M365 Copilot
 - How to setup use the Agent SDK with managed Identity so you no longer maintain secrets
 - How to setup and use SSO in M365 Copilot & Teams and pass the user token AI Foundry using Agent SDK
-- How to Configure SSO with Federated Credentials so your SSO flow does not have any secerts
+- How to Configure SSO with Federated Credentials so your SSO flow does not have any secerts (Single Tenant Only)
 
 ---
 
