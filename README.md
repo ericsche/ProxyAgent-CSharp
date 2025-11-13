@@ -70,10 +70,17 @@ Deploy your agent to Azure for production or dev environments.
 
 **See:** [M365Agent/AZURE_DEPLOYMENT.md](M365Agent/AZURE_DEPLOYMENT.md)
 
+**Using Microsoft 365 Agents Toolkit in VS Code:**
+1. Open the **Microsoft 365 Agents Toolkit** extension panel
+2. Select **Lifecycle** section
+3. Click **Provision** to create Azure resources
+4. Click **Deploy** to publish your bot application
+
+**Alternatively, using CLI:**
 ```powershell
 cd M365Agent
-atk provision --env dev    # Provision Azure infrastructure
-atk deploy --env dev        # Deploy your bot application
+atk provision --env dev
+atk deploy --env dev
 ```
 
 ---
@@ -265,18 +272,21 @@ The bot uses **Azure Managed Identity** (production) or **Single Tenant + Client
    RESOURCE_SUFFIX=prod123
    ```
 
-2. **Provision Infrastructure**
+2. **Provision and Deploy using Microsoft 365 Agents Toolkit:**
+   
+   **In VS Code:**
+   - Open the **Microsoft 365 Agents Toolkit** extension panel
+   - Under **Lifecycle**, click **Provision** to create Azure resources
+   - Then click **Deploy** to publish your bot application
+   
+   **Or using CLI:**
    ```powershell
    cd M365Agent
    atk provision --env dev
-   ```
-
-3. **Deploy Application**
-   ```powershell
    atk deploy --env dev
    ```
 
-4. **Install in Teams/Copilot**
+3. **Install in Teams/Copilot**
    - Upload app package from `M365Agent/appPackage/build/`
    - Test in production environment
 

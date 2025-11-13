@@ -39,7 +39,7 @@ if ($tunnelId -eq "") {
   $envFileContent | ForEach-Object {
     $line = $_
     if ($line -like "BOT_ENDPOINT=*") {
-      $line = "BOT_ENDPOINT=$endpoint/api/messages"
+      $line = "BOT_ENDPOINT=$endpoint"
     }
     if ($line -like "BOT_DOMAIN=*") {
       $line = "BOT_DOMAIN=$domain"
