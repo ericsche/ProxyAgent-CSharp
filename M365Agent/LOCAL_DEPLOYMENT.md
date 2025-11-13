@@ -92,7 +92,7 @@ graph TB
     OAuth -.->|"Secure Tunnel"| LocalBot
     
     subgraph Local["Local Development Machine"]
-        LocalBot[".NET 9 Bot Application<br/>- VS Code<br/>- Debugger Attached<br/>- Port: 5130<br/>- Dev tunnel (automatic)"]
+        LocalBot[".NET 9 Bot Application<br/>- VS Code / VS<br/>- Debugger Attached<br/>- Port: 5130<br/>- Dev tunnel (automatic)"]
     end
     
     style Azure fill:#e1f5ff,stroke:#0078d4,stroke-width:2px
