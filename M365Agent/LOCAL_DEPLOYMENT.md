@@ -1,11 +1,12 @@
 # Local Development & Debugging Guide
 
-**Quick Start:** Press **F5** in VS Code to automatically provision, deploy, and debug your M365 Agent locally!
+**Quick Start:** Press **F5** in VS Code or Visual Studio to automatically provision, deploy, and debug your M365 Agent locally!
 
 ---
 
 ## Table of Contents
 - [Overview](#overview)
+- [IDE Support](#ide-support)
 - [Prerequisites](#prerequisites)
 - [Getting Started](#getting-started)
 - [What Happens When You Press F5](#what-happens-when-you-press-f5)
@@ -45,16 +46,37 @@ Local development is **fully automated** through Microsoft 365 Agents Toolkit. S
 
 ---
 
+## IDE Support
+
+### Visual Studio Code (Recommended)
+- **Full automation** - Press F5 and everything happens automatically
+- **Dynamic dev tunnel** - Automatically created and managed
+- **Pre-configured tasks** - Complete workflow automation
+- **Zero manual steps** - Start debugging immediately
+
+### Visual Studio
+- **Supported** with slight differences in setup
+- **Permanent tunnel setup required** - Must create a permanent public dev tunnel before first launch
+- **Steps:**
+  1. Use Visual Studio UI to create a permanent public dev tunnel
+  2. Visual Studio automatically updates `.env.local` with tunnel information
+  3. Press F5 to provision and start debugging
+- **Why different?** Visual Studio uses permanent tunnels that persist across sessions, while VS Code creates temporary tunnels automatically on each F5
+
+**This guide primarily covers VS Code**, but the concepts apply to both IDEs.
+
+---
+
 ## Key Differences from Production
 
 | Feature | Production Deployment | Local Development |
 |---------|----------------------|-------------------|
-| **Bot Hosting** | Azure App Service | Local machine (VS Code) |
+| **Bot Hosting** | Azure App Service | Local machine (VS Code/Visual Studio) |
 | **Bot Identity** | User Assigned Managed Identity | App Registration with Client Secret |
 | **Bot Auth** | UserAssignedMSI | SingleTenant + Client Secret |
-| **Endpoint** | Static Azure URL | Dynamic devtunnel URL |
+| **Endpoint** | Static Azure URL | Dynamic devtunnel URL (auto in VS Code, manual in VS) |
 | **SSO App** | Federated Credentials | Federated Credentials |
-| **Cost** | ~$13-100/month | Bot Service only (~$0 with F0) |
+| **Cost** | ~$55-200/month | Bot Service only (~$0 with F0) |
 | **Debugging** | Remote (limited) | Full local debugging |
 | **Deployment** | `atk deploy` required | Run locally (F5) |
 | **Iteration Speed** | 2-3 minutes | Instant |
@@ -135,13 +157,16 @@ az --version
 devtunnel --version
 ```
 
-### Required VS Code Extensions
+### Required IDE Extensions
 
-**Automatically recommended when you open the project!** Just click "Install All" when prompted.
-
+**For VS Code (automatically recommended when you open the project):**
 - **Microsoft 365 Agents Toolkit** - Handles all automation
 - **C# Dev Kit** - C# development and debugging
 - **Azure Account** - Azure authentication
+
+**For Visual Studio:**
+- **Microsoft 365 Agents Toolkit** - Available in Visual Studio Installer
+- Built-in C# and .NET support
 
 ### Required Azure Permissions
 
@@ -174,7 +199,7 @@ az account show --query id -o tsv
 
 ## Getting Started
 
-### First Time Setup (2 Steps)
+### First Time Setup - VS Code (2 Steps)
 
 1. **Configure Azure credentials** in `.env.local`:
    ```bash
@@ -185,6 +210,32 @@ az account show --query id -o tsv
 2. **Press F5** in VS Code
 
 That's it! Everything else happens automatically.
+
+### First Time Setup - Visual Studio (3 Steps)
+
+1. **Configure environment** in `.env.local`:
+   ```bash
+   # Azure AI Foundry configuration
+   AZURE_AI_FOUNDRY_PROJECT_ENDPOINT=<your-ai-foundry-endpoint>
+   AGENT_ID=<your-agent-id>
+   ```
+
+2. **Create a permanent public dev tunnel:**
+   - Open the **Start Menu** in Visual Studio
+   [Start Menu](../images/VSscreen001.png)
+   - Select **Create a Tunnel**
+   - Configure tunnel as:
+     - **Access:** Public
+     - **Persistence:** Permanent
+   - Visual Studio will automatically update `.env.local` with tunnel information
+
+3. **Select the appropriate debug profile:**
+   - Choose either:
+     - **Microsoft Teams (browser)** - To test in Teams
+     - **Microsoft M365 Copilot (browser)** - To test in Copilot
+   - Press **F5** to provision and start debugging
+
+**Note:** The tunnel is permanent and will persist across debug sessions.
 
 ### What You'll See
 
