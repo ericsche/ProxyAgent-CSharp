@@ -389,11 +389,10 @@ The bot uses **Azure Managed Identity** (production) or **Single Tenant + Client
 - [Azure AI Foundry Agent Service (General Availability)](https://techcommunity.microsoft.com/blog/azure-ai-services-blog/announcing-general-availability-of-azure-ai-foundry-agent-service/4414352)
 - [Azure AI Foundry Documentation](https://learn.microsoft.com/azure/ai-services/)
 
-### Bot Framework
-- [Bot Framework SDK for .NET](https://github.com/microsoft/botbuilder-dotnet)
+### M365 Agent SDK & Azure Bot Service
+- [M365 Agent SDK](https://github.com/microsoft/agents)
 - [Azure Bot Service Documentation](https://learn.microsoft.com/azure/bot-service/)
-- [Connect a bot to Twilio (SMS)](https://learn.microsoft.com/azure/bot-service/bot-service-channel-connect-twilio?view=azure-bot-service-4.0)
-- [Connect a bot to Slack](https://learn.microsoft.com/azure/bot-service/bot-service-channel-connect-slack?view=azure-bot-service-4.0)
+
 
 ### Tutorials & Labs
 - [Build your own agent with the M365 Agents SDK and Semantic Kernel](https://microsoft.github.io/copilot-camp/pages/custom-engine/agents-sdk/)
@@ -721,10 +720,25 @@ Now that you have a working Stock Agent, you can:
 - Agent Toolkit Step ExtendToM365 fails from time to time. If it happens that means that the sideloading of your packaged failed and you should do it manually with the package that was automatically provisionned for you.
 
 
-## Version History
+## 👥 Contributors
+
+This project was built with contributions from:
+
+- **[@ericsche](https://github.com/ericsche)** - Project Lead & Development
+- **[@DavidRoussel](https://github.com/DavidRoussel)** - Co-Author & Technical Contributions
+- **[@MattB-msft](https://github.com/MattB-msft)** - Co-Author & Guidance
+- **[@garrytrinder](https://github.com/garrytrinder)** - ATK Guidance & Review
+
+Special thanks to everyone who contributed to making this solution possible!
+
+---
+
+## 📝 Version History
+
 |Date| Author| Comments|
 |---|---|---|
-|Nov 13, 2025| ericsche | V1 Release built with Darid Rousset|
+|Nov 13, 2025| ericsche | V1 Release built with David Rousset|
+
 ---
 
 ## 📄 License
