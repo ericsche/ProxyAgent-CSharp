@@ -66,7 +66,7 @@ graph TB
         end
         
         subgraph Step2["Step 2: App Service"]
-            AppServicePlan["App Service Plan (Windows, B1)"]
+            AppServicePlan["App Service Plan (Win, B1)"]
             WebApp["Web App (.NET 9)<br/>- Uses Managed Identity<br/>- Health Check: /health<br/>- HTTPS Only<br/>- Always On"]
             AppServicePlan --> WebApp
         end
