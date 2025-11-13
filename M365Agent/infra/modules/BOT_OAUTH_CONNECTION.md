@@ -56,6 +56,7 @@ sequenceDiagram
     end
     
     Teams->>User: Display Agent response 
+    
 ```
 
 **Key Points:**
