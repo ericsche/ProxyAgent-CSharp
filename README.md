@@ -6,6 +6,12 @@ This solution demonstrates how to integrate an Azure AI Foundry agent with Micro
 
 [![Video Tutorial](https://img.youtube.com/vi/U9Yv2vjKYbI/0.jpg)](https://www.youtube.com/watch?v=U9Yv2vjKYbI)
 
+## This sample illustrates
+- How to connect an AI Foundry Agent to M365 Copilot
+- How to setup use the Agent SDK with managed Identity so you no longer maintain secrets
+- How to setup and use SSO in M365 Copilot & Teams and pass the user token AI Foundry using Agent SDK
+- How to Configure SSO with Federated Credentials so your SSO flow does not have any secerts
+
 ---
 
 ## 🔄 Architecture Flow
@@ -44,7 +50,7 @@ sequenceDiagram
 This proxy pattern allows you to:
 - ✅ Connect existing AI agents to Microsoft 365 Copilot
 - ✅ Maintain your AI logic in Azure AI Foundry
-- ✅ Provide seamless user experience in Teams and Copilot
+- ✅ Provide seamless user experience in Teams and Copilot with SSO
 - ✅ Handle authentication and message routing automatically
 
 ---
@@ -700,23 +706,19 @@ Now that you have a working Stock Agent, you can:
 
 ---
 
-## 🤝 Contributing
+## Known issues
+- Local Debug fails to open the solution directly in the browser. You'll need to navigate to the solution manually.
+- Agent Toolkit Step ExtendToM365 fails from time to time. If it happens that means that the sideloading of your packaged failed and you should do it manually with the package that was automatically provisionned for you.
 
-Contributions are welcome! Please feel free to submit issues or pull requests.
 
+## Version History
+|Date| Author| Comments|
+|---|---|---|
+|Nov 13, 2025| ericsche | V1 Release built with Darid Rousset|
 ---
 
 ## 📄 License
 
 This project is licensed under the terms specified in the [LICENSE](LICENSE) file.
-
----
-
-## 💬 Support
-
-For questions or issues:
-- **GitHub Issues:** [Create an issue](https://github.com/ericsche/ProxyAgent/issues)
-- **Microsoft Q&A:** [Teams Development](https://learn.microsoft.com/answers/topics/microsoft-teams.html)
-- **Teams Toolkit Issues:** [OfficeDev/TeamsFx](https://github.com/OfficeDev/TeamsFx/issues)
 
 
