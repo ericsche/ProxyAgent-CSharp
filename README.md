@@ -205,9 +205,9 @@ ProxyAgent/
    }
    ```
 
-### Authentication
+### Authentication for Bot Service
 
-The bot uses **Azure Managed Identity** (production) or **Single Tenant + Client Secret** (local development) to authenticate with Azure AI Foundry.
+The bot uses **Azure Managed Identity** (production) or **Single Tenant + Client Secret** (local development) to secure Azure Bot Service connection.
 
 **Local Development:**
 ```json
