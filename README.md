@@ -725,7 +725,7 @@ Now that you have a working Stock Agent, you can:
 This project was built with contributions from:
 
 - **[@ericsche](https://github.com/ericsche)** - Project Lead & Development
-- **[@DavidRoussel](https://github.com/DavidRoussel)** - Co-Author & Technical Contributions
+- **[@davrous](https://github.com/davrous)** - Co-Author & Technical Contributions
 - **[@MattB-msft](https://github.com/MattB-msft)** - Co-Author & Guidance
 - **[@garrytrinder](https://github.com/garrytrinder)** - ATK Guidance & Review
 
