@@ -42,8 +42,7 @@ sequenceDiagram
     B->>P: POST /api/messages (JWT)
     P->>A: POST /process { prompt }
     A-->>P: { content }
-    P-->>B: sendActivity(content)
-    B-->>M: Response
+    P-->>M: sendActivity(content)
     M-->>U: Display result
 ```
 
@@ -728,6 +727,7 @@ This project was built with contributions from:
 - **[@davrous](https://github.com/davrous)** - Co-Author & Technical Contributions
 - **[@MattB-msft](https://github.com/MattB-msft)** - Co-Author & Guidance
 - **[@garrytrinder](https://github.com/garrytrinder)** - ATK Guidance & Review
+- **[@andikrueger](https://github.com/andikrueger)** - Code Review & Testing
 
 Special thanks to everyone who contributed to making this solution possible!
 
