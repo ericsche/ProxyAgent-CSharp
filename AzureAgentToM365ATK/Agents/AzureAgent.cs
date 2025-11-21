@@ -103,8 +103,6 @@ public class AzureAgent : AgentApplication
     /// <returns></returns>
     protected async Task SendMessageToAzureAgent(ITurnContext turnContext, ITurnState turnState, CancellationToken cancellationToken)
     {
-        var jwtToken = await UserAuthorization.GetTurnTokenAsync(turnContext, handlerName: "aifoundryaccess", cancellationToken: cancellationToken).ConfigureAwait(false);
-
         Console.WriteLine($"\nUser message received: {turnContext.Activity.Text}\n");
         try
         {
