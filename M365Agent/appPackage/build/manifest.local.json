@@ -1,13 +1,17 @@
 {
-    "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/vdevPreview/MicrosoftTeams.schema.json",
-    "manifestVersion": "devPreview",
+    "$schema": "https://developer.microsoft.com/json-schemas/teams/v1.24/MicrosoftTeams.schema.json",
+    "manifestVersion": "1.24",
     "version": "1.0.0",
-    "id": "9d36fb5d-3aa4-440d-b49e-592ffb827c21",
+    "id": "cbd05aeb-837d-4eef-b7bb-87ce540535f3",
     "developer": {
         "name": "Teams App, Inc.",
         "websiteUrl": "https://www.example.com",
         "privacyUrl": "https://www.example.com/privacy",
         "termsOfUseUrl": "https://www.example.com/termofuse"
+    },
+    "icons": {
+        "color": "color.png",
+        "outline": "outline.png"
     },
     "name": {
         "short": "AzureAgentToM365ATKlocal",
@@ -17,22 +21,24 @@
         "short": "Azure-powered agent for Microsoft 365 Copilot",
         "full": "Custom engine agent that integrates Azure services with Microsoft 365 Copilot for enhanced productivity"
     },
-    "icons": {
-        "outline": "outline.png",
-        "color": "color.png"
-    },
     "accentColor": "#FFFFFF",
-    "configurableTabs": [],
-    "staticTabs": [],
+    "copilotAgents": {
+        "customEngineAgents": [
+            {
+                "type": "bot",
+                "id": "960215a8-4699-4c10-9af2-7cf665243e6e"
+            }
+        ]
+    },
     "bots": [
         {
-            "botId": "5bcf8eb3-8902-45dc-94a7-aefd71cfebe6",
-            "isNotificationOnly": false,
-            "supportsFiles": false,
+            "botId": "960215a8-4699-4c10-9af2-7cf665243e6e",
             "scopes": [
                 "copilot",
                 "personal"
             ],
+            "supportsFiles": false,
+            "isNotificationOnly": false,
             "commandLists": [
                 {
                     "scopes": [
@@ -53,25 +59,19 @@
             ]
         }
     ],
+    "webApplicationInfo": {
+        "id": "8d3f50c3-c305-4277-959b-be0094d73823",
+        "resource": "api://botid-960215a8-4699-4c10-9af2-7cf665243e6e"
+    },
     "composeExtensions": [],
+    "configurableTabs": [],
+    "staticTabs": [],
     "permissions": [
         "identity",
         "messageTeamMembers"
     ],
     "validDomains": [
-        "giant-book-12shql5-5130.euw.devtunnels.ms",
+        "fn3rmvgk-5130.uks1.devtunnels.ms",
         "token.botframework.com"
-    ],
-    "webApplicationInfo": {
-        "id": "7faab78f-94b9-4291-8f54-ac53b1cc8783",
-        "resource": "api://botid-5bcf8eb3-8902-45dc-94a7-aefd71cfebe6"
-    },
-    "copilotAgents": {
-        "customEngineAgents": [
-            {
-                "id": "5bcf8eb3-8902-45dc-94a7-aefd71cfebe6",
-                "type": "bot"
-            }
-        ]
-    }
+    ]
 }
