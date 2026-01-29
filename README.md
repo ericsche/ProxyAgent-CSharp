@@ -16,6 +16,8 @@ This solution demonstrates how to integrate a Microsoft Foundry agent with Micro
 
 ## 🔄 Architecture Flow
 
+This is an high level sequence diagram illustrating the interaction flow between the user, Microsoft 365 Copilot, the Proxy Agent, and the Microsoft Foundry AI agent.
+
 ```mermaid
 sequenceDiagram
     %% Groups
