@@ -98,3 +98,4 @@ deploy:
       # or add it to your environment variable file.
       resourceId: ${{WEBAPPID}}
       workingDirectory: ../AzureAgentToM365ATK
+projectId: 324d9916-de15-43ed-b5e4-011636a333ec
