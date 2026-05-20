@@ -137,8 +137,8 @@ public class AzureAgent : AgentApplication
             // The new API accepts agentId (string) instead of the Response<PersistentAgent> object
             AIAgent _existingAgent = await _aiProjectClient.GetAIAgentAsync(this._agentId, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-            // Get or create thread: 
-            AgentThread _agentThread = GetConversationThread(_existingAgent, turnState);
+            // Get or create session: 
+            AgentSession _agentSession = await GetConversationSessionAsync(_existingAgent, turnState);
 
             // Inform the client that we are working on a response
             await turnContext.StreamingResponse.QueueInformativeUpdateAsync("Sending request to Foundry Agent.", cancellationToken).ConfigureAwait(false);
@@ -147,14 +147,15 @@ public class AzureAgent : AgentApplication
             ChatMessage message = new(ChatRole.User, turnContext.Activity.Text);
             // Send the message to the Azure agent and get the response
             // This will handle text responses,  if you want to handle attachments and other content types, you would need to extend this method.
-            await foreach (AgentRunResponseUpdate response in _existingAgent.RunStreamingAsync(message, _agentThread, cancellationToken: cancellationToken))
+            await foreach (AgentResponseUpdate response in _existingAgent.RunStreamingAsync(message, _agentSession, cancellationToken: cancellationToken))
             {
                 if (!string.IsNullOrEmpty(response.Text))
                 {
                     turnContext.StreamingResponse.QueueTextChunk(response.Text);
                 }
             }
-            turnState.Conversation.SetValue("conversation.threadInfo", ProtocolJsonSerializer.ToJson(_agentThread.Serialize()));
+            var serializedSession = await _existingAgent.SerializeSessionAsync(_agentSession).ConfigureAwait(false);
+            turnState.Conversation.SetValue("conversation.threadInfo", ProtocolJsonSerializer.ToJson(serializedSession));
         }
         catch (Exception ex)
         {
@@ -169,24 +170,24 @@ public class AzureAgent : AgentApplication
 
 
     /// <summary>
-    /// Manage Agent threads against the conversation state.
+    /// Manage Agent sessions against the conversation state.
     /// </summary>
     /// <param name="agent">ChatAgent</param>
     /// <param name="turnState">State Manager for the Agent.</param>
     /// <returns></returns>
-    private static AgentThread GetConversationThread(AIAgent agent, ITurnState turnState)
+    private static async Task<AgentSession> GetConversationSessionAsync(AIAgent agent, ITurnState turnState)
     {
-        AgentThread thread;
+        AgentSession session;
         string agentThreadInfo = turnState.Conversation.GetValue<string>("conversation.threadInfo", () => null);
         if (string.IsNullOrEmpty(agentThreadInfo))
         {
-            thread = agent.GetNewThread();
+            session = await agent.CreateSessionAsync().ConfigureAwait(false);
         }
         else
         {
             JsonElement ele = ProtocolJsonSerializer.ToObject<JsonElement>(agentThreadInfo);
-            thread = agent.DeserializeThread(ele);
+            session = await agent.DeserializeSessionAsync(ele).ConfigureAwait(false);
         }
-        return thread;
+        return session;
     }
 }
