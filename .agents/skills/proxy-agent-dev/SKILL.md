@@ -149,24 +149,26 @@ M365 Copilot provides a **Conversation ID** (`turnContext.Activity.Conversation.
 
 ### Core Dependencies (invariant)
 
-| Package | Purpose |
-|---------|---------|
-| `Microsoft.Agents.Hosting.AspNetCore` | ASP.NET Core hosting + channel auth |
-| `Microsoft.Agents.Authentication.Msal` | MSAL-based bot authentication |
-| `Microsoft.Agents.AI` | `AIAgent`, `AgentThread`, AI abstractions |
-| `Azure.Identity` | `TokenCredential` for zero-secret auth |
-| `Microsoft.Extensions.AI` | `IChatClient` abstraction for LLM integration |
-| `AdaptiveCards` | Adaptive Card rendering |
+| Package | Version | Purpose |
+|---------|---------|---------|
+| `Microsoft.Agents.Hosting.AspNetCore` | 1.3.176 | ASP.NET Core hosting + channel auth |
+| `Microsoft.Agents.Authentication.Msal` | 1.3.176 | MSAL-based bot authentication |
+| `Microsoft.Agents.AI` | 1.0.0-preview.251219.1 | `AIAgent`, `AgentThread`, AI abstractions |
+| `Azure.Identity` | 1.17.1 | `TokenCredential` for zero-secret auth |
+| `Microsoft.Extensions.AI` | 10.1.1 | `IChatClient` abstraction for LLM integration |
+| `AdaptiveCards` | 3.1.0 | Adaptive Card rendering |
 
 ### Backend-Specific (you replace these)
 
 **LLM providers:**
 
-| Example | Package |
-|---------|---------|
-| Azure OpenAI | `Azure.AI.OpenAI`, `Microsoft.Extensions.AI.OpenAI` |
-| OpenAI | `OpenAI`, `Microsoft.Extensions.AI.OpenAI` |
-| Azure AI Foundry | `Microsoft.Agents.AI.AzureAI`, `Microsoft.Agents.AI.AzureAI.Persistent`, `Azure.AI.Agents.Persistent` |
+| Example | Package | Version |
+|---------|---------|---------|
+| Azure OpenAI | `Azure.AI.OpenAI` | 2.1.0 |
+| Azure OpenAI | `Microsoft.Extensions.AI.OpenAI` | 10.1.1-preview.1.25612.2 |
+| Azure AI Foundry | `Microsoft.Agents.AI.AzureAI` | 1.0.0-preview.251219.1 |
+| Azure AI Foundry | `Microsoft.Agents.AI.AzureAI.Persistent` | 1.0.0-preview.251219.1 |
+| Azure AI Foundry | `Azure.AI.Agents.Persistent` | 1.2.0-beta.8 |
 
 **Orchestrators:**
 
