@@ -152,11 +152,11 @@ M365 Copilot provides a **Conversation ID** (`turnContext.Activity.Conversation.
 | Package | Purpose |
 |---------|---------|
 | `Microsoft.Agents.Hosting.AspNetCore` | ASP.NET Core hosting + channel auth |
-| `Microsoft.Agents.Builder` | `AgentApplication`, `ITurnContext`, `TurnState`, storage |
-| `Microsoft.Agents.Builder.App` | Agent app builder extensions |
-| `Microsoft.Agents.Storage` | `IStorage`, `MemoryStorage` |
+| `Microsoft.Agents.Authentication.Msal` | MSAL-based bot authentication |
+| `Microsoft.Agents.AI` | `AIAgent`, `AgentThread`, AI abstractions |
 | `Azure.Identity` | `TokenCredential` for zero-secret auth |
 | `Microsoft.Extensions.AI` | `IChatClient` abstraction for LLM integration |
+| `AdaptiveCards` | Adaptive Card rendering |
 
 ### Backend-Specific (you replace these)
 
@@ -164,9 +164,9 @@ M365 Copilot provides a **Conversation ID** (`turnContext.Activity.Conversation.
 
 | Example | Package |
 |---------|---------|
-| Azure OpenAI | `Azure.AI.OpenAI` |
-| OpenAI | `OpenAI` |
-| Azure AI Foundry | `Azure.AI.Projects`, `Azure.AI.Agents.Persistent` |
+| Azure OpenAI | `Azure.AI.OpenAI`, `Microsoft.Extensions.AI.OpenAI` |
+| OpenAI | `OpenAI`, `Microsoft.Extensions.AI.OpenAI` |
+| Azure AI Foundry | `Microsoft.Agents.AI.AzureAI`, `Microsoft.Agents.AI.AzureAI.Persistent`, `Azure.AI.Agents.Persistent` |
 
 **Orchestrators:**
 
