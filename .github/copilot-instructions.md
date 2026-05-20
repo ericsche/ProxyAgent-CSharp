@@ -17,7 +17,7 @@ Use this mapping to know the current vs. former names—so you can correctly int
 
 # Instructions for Copilot
 - Before doing any work in this repository, read the `proxy-agent-dev` skill.
-- Before editing code in this repository, ensure the [Microsoft Agents SDK plugin](https://github.com/microsoft/Agents/tree/main/agent-plugins) is installed. It provides skills (`agents-sdk-csharp`, `agents-sdk-debugging`, `azure-agents-sdk-provision`) that activate automatically when working with `Microsoft.Agents.Hosting.AspNetCore` and related packages.
+- Before editing code in this repository, ensure the [Microsoft Agents SDK plugin](https://github.com/microsoft/Agents/tree/main/agent-plugins) is installed. It provides skills (`agents-for-dotnet`, `agents-sdk-debugging`, `azure-agents-sdk-provision`) that activate automatically when working with `Microsoft.Agents.Hosting.AspNetCore` and related packages.
 - Apps and agents for Microsoft 365 or Microsoft 365 Copilot refers to applications for products in Microsoft 365, agents for Microsoft 365 Copilot, including Teams app, Office addin, declarative agent, customer engine agent, etc.
 - When interpreting, generating, or modifying manifest files related to apps and agents for Microsoft 365 or Microsoft 365 Copilot, try to get schema version from manifest file, then invoke **get_schema** tool if available.
 - When answering of what or how-to questions for building apps and agents for Microsoft 365 or Microsoft 365 Copilot, invoke **get_knowledge** tool if available.
