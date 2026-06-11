@@ -16,8 +16,11 @@ Use this mapping to know the current vs. former names—so you can correctly int
 > - Explain the rebranding briefly if it helps the user's understanding.  
 
 # Instructions for Copilot
-- Before doing any work in this repository, read the `proxy-agent-dev` skill.
-- Before editing code in this repository, ensure the [Microsoft Agents SDK plugin](https://github.com/microsoft/Agents/tree/main/agent-plugins) is installed. It provides skills (`agents-for-dotnet`, `agents-sdk-debugging`, `azure-agents-sdk-provision`) that activate automatically when working with `Microsoft.Agents.Hosting.AspNetCore` and related packages.
+- Before doing any work in this repository, read the `proxy-agent-dev` skill at [.agents/skills/proxy-agent-dev/SKILL.md](../.agents/skills/proxy-agent-dev/SKILL.md). This is the authoritative guide for the codebase.
+- Before editing any .NET/C# code in this repository, load the Microsoft Agents SDK skills **up front** — do not wait for them to activate on their own:
+  - First confirm the [`agents-for-net` plugin](https://github.com/microsoft/Agents/tree/main/agent-plugins/agents-for-net) from the Microsoft Agents SDK marketplace is installed. If it is not, tell the user to install it before proceeding by running inside their assistant: `/plugin marketplace add microsoft/Agents` then `/plugin install agents-for-net@microsoft-agents-sdk`.
+  - Then read the relevant skill(s) for the task before writing or modifying code: `agents-sdk-dotnet` (building/modifying agents), `agents-sdk-dotnet-debugging` (build errors, auth failures, startup crashes, config issues), and `azure-agents-sdk-provision-dotnet` (Azure Bot resources, Entra app registrations, identity credentials, OAuth connections). For migrations, also `bf-to-agents-sdk-dotnet-migration` and `agents-sdk-dotnet-activityhandler-migration`.
+  - These skills are required whenever working with `Microsoft.Agents.Hosting.AspNetCore` or related Agents SDK packages (e.g. `AzureAgentToM365ATK/Program.cs`, `AzureAgentToM365ATK/Agents/AzureAgent.cs`).
 - Apps and agents for Microsoft 365 or Microsoft 365 Copilot refers to applications for products in Microsoft 365, agents for Microsoft 365 Copilot, including Teams app, Office addin, declarative agent, customer engine agent, etc.
 - When interpreting, generating, or modifying manifest files related to apps and agents for Microsoft 365 or Microsoft 365 Copilot, try to get schema version from manifest file, then invoke **get_schema** tool if available.
 - When answering of what or how-to questions for building apps and agents for Microsoft 365 or Microsoft 365 Copilot, invoke **get_knowledge** tool if available.
