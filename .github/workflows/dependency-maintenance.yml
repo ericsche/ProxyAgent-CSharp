@@ -1,0 +1,113 @@
+name: Dependency maintenance
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 7 * * 1"
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dependency-maintenance-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  dependency-audit:
+    name: Audit dependencies and build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      PROJECT: AzureAgentToM365ATK/AzureAgentToM365ATK.csproj
+      DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+      DOTNET_NOLOGO: "1"
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Restore packages
+        id: restore
+        run: |
+          mkdir -p dependency-reports
+          dotnet restore "$PROJECT"
+
+      - name: Find available updates
+        id: outdated
+        run: |
+          dotnet list "$PROJECT" package --outdated --include-transitive \
+            2>&1 | tee dependency-reports/outdated.txt
+
+      - name: Find known vulnerabilities
+        id: vulnerable
+        if: ${{ !cancelled() && steps.restore.outcome == 'success' }}
+        run: |
+          dotnet list "$PROJECT" package --vulnerable --include-transitive \
+            2>&1 | tee dependency-reports/vulnerable.txt
+
+      - name: Find deprecated packages
+        id: deprecated
+        if: ${{ !cancelled() && steps.restore.outcome == 'success' }}
+        run: |
+          dotnet list "$PROJECT" package --deprecated --include-transitive \
+            2>&1 | tee dependency-reports/deprecated.txt
+
+      - name: Build with proposed dependencies
+        id: build
+        if: ${{ !cancelled() && steps.restore.outcome == 'success' }}
+        run: dotnet build "$PROJECT" --configuration Release --no-restore
+
+      - name: Publish dependency summary
+        if: ${{ always() }}
+        env:
+          RESTORE_STATUS: ${{ steps.restore.outcome }}
+          OUTDATED_STATUS: ${{ steps.outdated.outcome }}
+          VULNERABLE_STATUS: ${{ steps.vulnerable.outcome }}
+          DEPRECATED_STATUS: ${{ steps.deprecated.outcome }}
+          BUILD_STATUS: ${{ steps.build.outcome }}
+        run: |
+          {
+            echo "## Dependency maintenance"
+            echo
+            echo "| Check | Status |"
+            echo "| --- | --- |"
+            echo "| Restore | $RESTORE_STATUS |"
+            echo "| Available updates | $OUTDATED_STATUS |"
+            echo "| Known vulnerabilities | $VULNERABLE_STATUS |"
+            echo "| Deprecated packages | $DEPRECATED_STATUS |"
+            echo "| Build | $BUILD_STATUS |"
+            echo
+            echo "Findings are informational, not an approval to merge. Restore, build, or report command failures fail the workflow."
+            echo "Review Dependabot PRs and release notes before merging, especially major versions and existing preview packages."
+            for report in outdated vulnerable deprecated; do
+              echo
+              echo "### ${report^}"
+              echo
+              if [[ -f "dependency-reports/$report.txt" ]]; then
+                echo '```text'
+                cat "dependency-reports/$report.txt"
+                echo '```'
+              else
+                echo "Report unavailable. Check the step status and workflow logs."
+              fi
+            done
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload dependency reports
+        if: ${{ !cancelled() && steps.restore.outcome == 'success' }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: dependency-reports
+          path: dependency-reports/*.txt
+          retention-days: 14
+          if-no-files-found: error

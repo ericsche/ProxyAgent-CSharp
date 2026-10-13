@@ -99,6 +99,33 @@ This sample uses the **minimum recommended and supported versions** of the Micro
 
 > **Note:** Preview packages are used exclusively for Microsoft Foundry integration and will be updated to v1 stable releases once they are published.
 
+## Dependency maintenance
+
+The **Dependency maintenance** GitHub Actions workflow runs every Monday at
+07:00 UTC and on pull requests. After the workflow is merged into the default
+branch, you can also run it from **Actions > Dependency maintenance > Run workflow**.
+
+It reports available NuGet updates, known vulnerabilities, and deprecated packages,
+including transitive dependencies. The results appear in the workflow summary
+and in the downloadable `dependency-reports` artifact (retained for 14 days).
+Each run also restores and builds the .NET project in Release mode; it does not
+provision Azure resources or require deployment secrets.
+
+Dependabot checks NuGet packages and GitHub Actions every Monday at 08:00
+Europe/Paris time and opens update PRs. Minor and patch version updates are
+grouped per ecosystem; major version updates remain separate for closer review.
+GitHub Actions are pinned to commit SHAs, which Dependabot can update.
+
+Updates are **not merged automatically**. Review the reports, release notes, and
+build result before merging, especially for existing preview packages or major
+version changes. The workflow does not opt stable packages into preview releases.
+Dependency findings are informational; failed restore, build, or report commands
+fail the workflow. A successful build does not replace testing SSO and streaming
+in Teams/Copilot.
+
+Configuration: [Dependabot](.github/dependabot.yml) and
+[dependency workflow](.github/workflows/dependency-maintenance.yml).
+
 ## 🚀 Quick Start
 
 Choose your deployment approach:
@@ -879,5 +906,4 @@ Special thanks to everyone who contributed to making this solution possible!
 ## 📄 License
 
 This project is licensed under the terms specified in the [LICENSE](LICENSE) file.
-
 
